@@ -8,24 +8,24 @@ datasource db {
 }
 
 model User {
-  id         Int       @id @default(autoincrement())
-  email      String    @unique
-  password   String
-  name       String
-  avatar     String?
-  roleId     Int
-  role       Role      @relation(fields: [roleId], references: [id])
-  isVerified Boolean   @default(false)
-  resetToken String?   
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
+  password    String
+  name        String
+  avatar      String?
+  roleId      Int
+  role        Role      @relation(fields: [roleId], references: [id])
+  isVerified  Boolean   @default(false)
+  resetToken  String?
   resetTokenExpires DateTime?
-  events     Event[]   @relation("EventCreator") 
-  promoCodes PromoCode[]
-  tickets    Ticket[]
+  events      Event[]   @relation("EventCreator")
+  promoCodes  PromoCode[] @relation("UserPromoCodes") // Add the relation name here
+  tickets     Ticket[] 
+  companies   Company[] 
 
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
-
 
 model Role {
   id          Int      @id @default(autoincrement())
@@ -34,42 +34,75 @@ model Role {
   users       User[]
 }
 
-
-model Event {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String
+model Company {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  email       String
   location    String
-  date        DateTime
-  creatorId   Int       
-  creator     User      @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  tickets     Ticket[]  
+  createdBy   Int      
+  creator     User     @relation(fields: [createdBy], references: [id])
+  events      Event[]  
+  news        News[]   
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
+model Event {
+  id               Int       @id @default(autoincrement())
+  title            String
+  description      String
+  location         String
+  date             DateTime
+  creatorId        Int      
+  creator          User      @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  companyId        Int       
+  company          Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  posterUrl        String    
+  notificationEnabled Boolean @default(true)
+  isVisitorListPublic Boolean @default(false)
+  publishDate      DateTime  
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  promoCodes       PromoCode[] @relation("EventPromoCodes")  // Зворотне посилання на PromoCode
+  tickets          Ticket[]    @relation("EventTickets")     // Зворотне посилання на Ticket
+}
 
 model PromoCode {
   id          Int       @id @default(autoincrement())
   code        String    @unique
   discount    Float     
   expiration  DateTime
-  userId      Int?      
-  user        User?     @relation(fields: [userId], references: [id])
+  eventId     Int       
+  event       Event     @relation("EventPromoCodes", fields: [eventId], references: [id])
+  
+  userId      Int
+  user        User      @relation("UserPromoCodes", fields: [userId], references: [id])  // Ensure the relation name matches here
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
 
+model News {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  companyId   Int      
+  company     Company  @relation(fields: [companyId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
 
 model Ticket {
   id          Int       @id @default(autoincrement())
   userId      Int
   user        User      @relation(fields: [userId], references: [id])
   eventId     Int
-  event       Event     @relation(fields: [eventId], references: [id])
+  event       Event     @relation("EventTickets", fields: [eventId], references: [id])
   seatNumber  String
   price       Float
 
