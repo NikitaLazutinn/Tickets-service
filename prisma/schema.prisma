@@ -8,30 +8,32 @@ datasource db {
 }
 
 model User {
-  id          Int       @id @default(autoincrement())
-  email       String    @unique
-  password    String
-  name        String
-  avatar      String?
-  roleId      Int
-  role        Role      @relation(fields: [roleId], references: [id])
-  isVerified  Boolean   @default(false)
-  resetToken  String?
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
+  password          String
+  name              String
+  avatar            String?
+  roleId            Int
+  role              Role      @relation(fields: [roleId], references: [id], name: "RoleUsers")
+  isVerified        Boolean   @default(false)
+  resetToken        String?
   resetTokenExpires DateTime?
-  events      Event[]   @relation("EventCreator")
-  promoCodes  PromoCode[] @relation("UserPromoCodes") // Add the relation name here
-  tickets     Ticket[] 
-  companies   Company[] 
+  companyId         Int?
+  company           Company?  @relation(fields: [companyId], references: [id], name: "UserCompany")
+  createdCompanies  Company[] @relation("CompanyCreator")
+  events            Event[]   @relation("EventCreator")
+  promoCodes        PromoCode[] @relation("UserPromoCodes")
+  tickets           Ticket[]
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
 model Role {
   id          Int      @id @default(autoincrement())
-  name        String   @unique 
+  name        String   @unique
   description String
-  users       User[]
+  users       User[]   @relation("RoleUsers")  
 }
 
 model Company {
@@ -39,10 +41,11 @@ model Company {
   name        String   @unique
   email       String
   location    String
-  createdBy   Int      
-  creator     User     @relation(fields: [createdBy], references: [id])
-  events      Event[]  
-  news        News[]   
+  createdBy   Int
+  creator     User     @relation(fields: [createdBy], references: [id], name: "CompanyCreator")
+  users       User[]   @relation("UserCompany")
+  events      Event[]
+  news        News[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -58,17 +61,14 @@ model Event {
   creator          User      @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   companyId        Int       
   company          Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
   posterUrl        String    
   notificationEnabled Boolean @default(true)
   isVisitorListPublic Boolean @default(false)
   publishDate      DateTime  
-
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-
-  promoCodes       PromoCode[] @relation("EventPromoCodes")  // Зворотне посилання на PromoCode
-  tickets          Ticket[]    @relation("EventTickets")     // Зворотне посилання на Ticket
+  promoCodes       PromoCode[] @relation("EventPromoCodes") 
+  tickets          Ticket[]    @relation("EventTickets")    
 }
 
 model PromoCode {
@@ -78,10 +78,8 @@ model PromoCode {
   expiration  DateTime
   eventId     Int       
   event       Event     @relation("EventPromoCodes", fields: [eventId], references: [id])
-  
   userId      Int
-  user        User      @relation("UserPromoCodes", fields: [userId], references: [id])  // Ensure the relation name matches here
-
+  user        User      @relation("UserPromoCodes", fields: [userId], references: [id])  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -92,7 +90,6 @@ model News {
   content     String
   companyId   Int      
   company     Company  @relation(fields: [companyId], references: [id])
-
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -105,7 +102,6 @@ model Ticket {
   event       Event     @relation("EventTickets", fields: [eventId], references: [id])
   seatNumber  String
   price       Float
-
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
