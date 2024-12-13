@@ -18,8 +18,8 @@ model User {
   isVerified        Boolean   @default(false)
   resetToken        String?
   resetTokenExpires DateTime?
-  companyId         Int?
-  company           Company?  @relation(fields: [companyId], references: [id], name: "UserCompany")
+  companyId         Int
+  company           Company  @relation(fields: [companyId], references: [id], name: "UserCompany")
   createdCompanies  Company[] @relation("CompanyCreator")
   events            Event[]   @relation("EventCreator")
   promoCodes        PromoCode[] @relation("UserPromoCodes")
