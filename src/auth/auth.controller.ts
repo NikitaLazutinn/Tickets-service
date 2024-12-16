@@ -15,8 +15,8 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
 import { LoginDto } from './dto/login.dto';
-// import { AuthGuard } from 'src/guards';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthUserGuard } from 'src/guards';
 
 @Controller('auth')
 export class AuthController {
@@ -40,17 +40,21 @@ export class AuthController {
     return this.authService.verifyEmail(token);
   }
 
+  @UseGuards(AuthUserGuard)
   @Post('request-password-reset')
-  async requestPasswordReset(@Query('email') email: string) {
+  async requestPasswordReset(@Req() req, @Query('email') email: string) {
     if (!email) {
       throw new BadRequestException('Email is required');
     }
-    return this.authService.requestPasswordReset(email);
+    const token = req.user;
+    return this.authService.requestPasswordReset(email, token);
   }
 
+  @UseGuards(AuthUserGuard)
   @Patch('reset-password')
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return this.authService.resetPassword(resetPasswordDto);
+  async resetPassword(@Req() req, @Body() resetPasswordDto: ResetPasswordDto) {
+    const token = req.user;
+    return this.authService.resetPassword(resetPasswordDto, token);
   }
 
   @UseGuards(AuthGuard('google'))

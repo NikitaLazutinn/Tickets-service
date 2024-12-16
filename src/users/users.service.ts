@@ -5,17 +5,22 @@ import {
   Inject,
   forwardRef,
   InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CreateUserDto, Update_UserDto } from './dto/create-user.dto';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from 'prisma/prisma.service';
+import * as nodemailer from 'nodemailer';
 import { RoleService } from 'src/role/role.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private roleService: RoleService,
+  ) {}
 
   async checkData(dto, data) {
     const registerDto = plainToClass(dto, data);
@@ -229,5 +234,54 @@ export class UsersService {
       where: { id: userId },
       data: { avatar: imageUrl, deleteHash: deleteHash },
     });
+  }
+
+  async updateUserRole(userId: number, roleId: number, token: string) {
+    if (token['roleId'] !== 1) {
+      throw new ForbiddenException('Access denied, user not Admin');
+    }
+    const user = await this.find(userId);
+    const role = await this.roleService.findOne(roleId, token);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { roleId },
+    });
+
+    if (roleId === 2) {
+      await this.sendEventCreatorNotification(user.email);
+    }
+
+    return { message: `User role updated successfully to ${role.name}` };
+  }
+
+  private async sendEventCreatorNotification(email: string) {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.SENDER,
+      to: email,
+      subject: 'Congratulations! You are now an Event Creator',
+      text: `Hello,
+
+You have been granted the Event Creator role on our platform. You can now create and manage events!
+
+Best regards,
+The Team Tickets Servise`,
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (error) {
+      throw new BadRequestException(
+        'Failed to send EventCreator notification email',
+      );
+    }
   }
 }

@@ -7,49 +7,54 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { AuthUserGuard } from 'src/guards';
 // import { PostOwnershipGuard } from 'src/post/guards/postOwnership.guard';
 
 @Controller('role')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
+  @UseGuards(AuthUserGuard)
   @Post()
-  // @UseGuards(PostOwnershipGuard)
-  create(@Body() createRoleDto: CreateRoleDto) {
-    return this.roleService.create(createRoleDto);
+  create(@Req() req, @Body() createRoleDto: CreateRoleDto) {
+    const token = req.user;
+    return this.roleService.create(createRoleDto, token);
   }
 
+  @UseGuards(AuthUserGuard)
   @Get()
-  findAll() {
-    return this.roleService.findAll();
+  findAll(@Req() req) {
+    const token = req.user;
+    return this.roleService.getAllRoles(token);
   }
 
+  @UseGuards(AuthUserGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.roleService.findOne(+id);
+  findOne(@Param('id') id: string, @Req() req) {
+    const token = req.user;
+    return this.roleService.findOne(+id, token);
   }
 
-  @Patch(':userId/role')
-  async changeUserRole(
-    @Param('userId') userId: number,
-    @Body('roleName') roleName: string,
-  ) {
-    return this.roleService.updateUserRole(userId, roleName);
-  }
-
+  @UseGuards(AuthUserGuard)
   @Patch(':id')
-  // @UseGuards(PostOwnershipGuard)
-  update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
-    return this.roleService.update(+id, updateRoleDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateRoleDto: UpdateRoleDto,
+    @Req() req,
+  ) {
+    const token = req.user;
+    return this.roleService.update(+id, updateRoleDto, token);
   }
 
+  @UseGuards(AuthUserGuard)
   @Delete(':id')
-  // @UseGuards(PostOwnershipGuard)
-  remove(@Param('id') id: string) {
-    return this.roleService.remove(+id);
+  remove(@Param('id') id: string, @Req() req) {
+    const token = req.user;
+    return this.roleService.remove(+id, token);
   }
 }

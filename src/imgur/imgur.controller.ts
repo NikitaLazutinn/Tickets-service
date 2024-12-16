@@ -8,7 +8,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { AuthGuard } from 'src/guards';
+import { AuthUserGuard } from 'src/guards';
 import { ImgurService } from './imgur.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -16,7 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class ImgurController {
   constructor(private readonly imgurService: ImgurService) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthUserGuard)
   @Post('add-profile-photo')
   @UseInterceptors(FileInterceptor('profilePhoto'))
   async addProfilePhoto(
@@ -28,7 +28,7 @@ export class ImgurController {
     return this.imgurService.addProfilePhoto(file, tokenData);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthUserGuard)
   @Patch('change-profile-photo')
   @UseInterceptors(FileInterceptor('profilePhoto'))
   async changeProfilePhoto(
@@ -40,12 +40,10 @@ export class ImgurController {
     return this.imgurService.changeProfilePhoto(file, tokenData);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthUserGuard)
   @Delete('delete-profile-photo')
   async deleteProfilePhoto(@Req() request) {
     const tokenData = request.user;
     return this.imgurService.deleteProfilePhoto(tokenData);
   }
-
-
 }

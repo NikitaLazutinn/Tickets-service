@@ -7,7 +7,7 @@ CREATE TABLE "User" (
     "avatar" TEXT,
     "roleId" INTEGER DEFAULT 1,
     "isVerified" BOOLEAN NOT NULL DEFAULT false,
-    "deleteHash" TEXT NOT NULL,
+    "deleteHash" TEXT,
     "resetToken" TEXT,
     "resetTokenExpires" TIMESTAMP(3),
     "companyId" INTEGER,
