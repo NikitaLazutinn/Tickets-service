@@ -42,19 +42,17 @@ export class AuthController {
 
   @UseGuards(AuthUserGuard)
   @Post('request-password-reset')
-  async requestPasswordReset(@Req() req, @Query('email') email: string) {
+  async requestPasswordReset(@Query('email') email: string) {
     if (!email) {
       throw new BadRequestException('Email is required');
     }
-    const token = req.user;
-    return this.authService.requestPasswordReset(email, token);
+    return this.authService.requestPasswordReset(email);
   }
 
   @UseGuards(AuthUserGuard)
   @Patch('reset-password')
-  async resetPassword(@Req() req, @Body() resetPasswordDto: ResetPasswordDto) {
-    const token = req.user;
-    return this.authService.resetPassword(resetPasswordDto, token);
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto);
   }
 
   @UseGuards(AuthGuard('google'))

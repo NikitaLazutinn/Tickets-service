@@ -106,11 +106,7 @@ export class AuthService {
     return { message: 'Login successful', token };
   }
 
-  async requestPasswordReset(email: string, token: string) {
-    if (token['roleId'] !== 1) {
-      throw new ForbiddenException('Access denied, user not Admin');
-    }
-
+  async requestPasswordReset(email: string) {
     const user = await this.usersService.findUserByEmail(email);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -137,12 +133,8 @@ export class AuthService {
     return { message: 'Password reset email sent successfully' };
   }
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto, token: string) {
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
     try {
-      if (token['roleId'] !== 1) {
-        throw new ForbiddenException('Access denied, user not Admin');
-      }
-
       const decoded = this.jwtService.verify(resetPasswordDto.token);
       const user = await this.usersService.findUserByEmail(decoded.email);
       if (!user) {
