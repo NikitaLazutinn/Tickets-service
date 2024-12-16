@@ -13,7 +13,7 @@ model User {
   password          String
   name              String
   avatar            String?
-  roleId            Int?        @default(1)
+  roleId            Int?        @default(3)
   isVerified        Boolean     @default(false)
   deleteHash        String?
   resetToken        String?

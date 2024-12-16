@@ -5,7 +5,7 @@ CREATE TABLE "User" (
     "password" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "avatar" TEXT,
-    "roleId" INTEGER DEFAULT 1,
+    "roleId" INTEGER DEFAULT 3,
     "isVerified" BOOLEAN NOT NULL DEFAULT false,
     "deleteHash" TEXT,
     "resetToken" TEXT,

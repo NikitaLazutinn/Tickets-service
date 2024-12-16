@@ -6,24 +6,27 @@ import {
 } from '@nestjs/common';
 import axios from 'axios';
 import * as FormData from 'form-data';
+import { log } from 'console';
 
 @Injectable()
 export class ImgurService {
-  constructor(
-    private readonly userService: UsersService,
-  ) {}
+  constructor(private readonly userService: UsersService) {}
 
   private async uploadToImgur(file) {
     const formData = new FormData();
     formData.append('image', file.buffer, file.originalname);
 
     try {
-      const response = await axios.post(process.env.IMGUR_URL, formData, {
-        headers: {
-          Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}`,
-          ...formData.getHeaders(),
+      const response = await axios.post(
+        `${process.env.IMGUR_URL}/upload`,
+        formData,
+        {
+          headers: {
+            Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}`,
+            ...formData.getHeaders(),
+          },
         },
-      });
+      );
       const { link, deletehash } = response.data?.data;
       if (link && deletehash) {
         return { link, deletehash };
@@ -35,15 +38,17 @@ export class ImgurService {
   }
 
   private async deleteImageFromImgur(deletehash: string) {
-    await axios.delete(`${process.env.IMGUR_URL}/${deletehash}`, {
+    console.log(process.env.IMGUR_URL);
+    console.log(process.env.IMGUR_CLIENT_ID);
+    console.log(process.env.IMGUR_CLIENT_SECRET);
+
+    await axios.delete(`${process.env.IMGUR_URL}/image/${deletehash}`, {
       headers: { Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}` },
     });
   }
 
-  
-
   async addProfilePhoto(file, token_data: string) {
-    const userId = token_data['id'];
+    const userId = token_data['userId'];
 
     const user = await this.userService.find(userId);
 
@@ -64,7 +69,7 @@ export class ImgurService {
   }
 
   async changeProfilePhoto(file, token_data: string) {
-    const userId = token_data['id'];
+    const userId = token_data['userId'];
 
     const user = await this.userService.find(userId);
 
@@ -72,22 +77,23 @@ export class ImgurService {
       throw new BadRequestException('Profile photo doesn`t exist');
     }
 
+    console.log('1');
     await this.deleteImageFromImgur(user.deleteHash);
-
+    console.log('2');
     const { link: uploadedImageUrl, deletehash } =
       await this.uploadToImgur(file);
-
+    console.log('3');
     await this.userService.updateProfilePhoto(
       userId,
       uploadedImageUrl,
       deletehash,
     );
-
+    console.log('4');
     return { message: 'Profile photo has been updated successfully!' };
   }
 
   async deleteProfilePhoto(token_data: string) {
-    const userId = token_data['id'];
+    const userId = token_data['userId'];
 
     const user = await this.userService.find(userId);
 
