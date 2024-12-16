@@ -13,27 +13,25 @@ import {
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { Public } from './decorators/public.decorator';
+
 import { LoginDto } from './dto/login.dto';
-import { GoogleAuthGuard } from './guards/google-auth.guard';
+// import { AuthGuard } from 'src/guards';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Public()
   @Post('signUp')
   async register(@Body() createUserDto: CreateUserDto) {
     return this.authService.signUp(createUserDto);
   }
 
-  @Public()
   @Post('signIn')
   async login(@Body() loginDto: LoginDto) {
     return this.authService.signIn(loginDto);
   }
 
-  @Public()
   @Get('email-confirmation-token/:token')
   async verifyEmail(@Param('token') token: string) {
     if (!token) {
@@ -55,14 +53,12 @@ export class AuthController {
     return this.authService.resetPassword(resetPasswordDto);
   }
 
-  @Public()
+  @UseGuards(AuthGuard('google'))
   @Get('google')
-  @UseGuards(GoogleAuthGuard)
   async googleAuth() {}
 
-  @Public()
+  @UseGuards(AuthGuard('google'))
   @Get('google/redirect')
-  @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req) {
     const { user } = req;
     return this.authService.googleAuth(user);

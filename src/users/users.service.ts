@@ -4,11 +4,14 @@ import {
   NotFoundException,
   Inject,
   forwardRef,
+  InternalServerErrorException,
 } from '@nestjs/common';
-import {Update_UserDto } from './dto/create-user.dto';
+import { CreateUserDto, Update_UserDto } from './dto/create-user.dto';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+import * as bcrypt from 'bcryptjs';
 import { PrismaService } from 'prisma/prisma.service';
+import { RoleService } from 'src/role/role.service';
 
 @Injectable()
 export class UsersService {
@@ -23,11 +26,16 @@ export class UsersService {
     }
   }
 
-  async create(data) {
-    const user = await this.prisma.user.create({
-      data,
+  async createUser(createUserDto: CreateUserDto) {
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+    return this.prisma.user.create({
+      data: {
+        email: createUserDto.email,
+        password: hashedPassword,
+        name: createUserDto.name,
+      },
     });
-    return user;
   }
 
   async findAll() {
@@ -99,9 +107,8 @@ export class UsersService {
           },
         },
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
       },
-      
     });
     if (user === null) {
       throw new NotFoundException(`There is no user with id: ${id}`);
@@ -113,6 +120,36 @@ export class UsersService {
     };
   }
 
+  async findUserByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email },
+    });
+  }
+
+  async updatePassword(email: string, newPassword: string) {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    return this.prisma.user.update({
+      where: { email },
+      data: { password: hashedPassword },
+    });
+  }
+
+  async updateByEmail(
+    email: string,
+    updateData: Partial<{
+      resetToken: string | null;
+      resetTokenExpires: Date | null;
+      roleId: number;
+      password: string;
+      isVerified: true;
+    }>,
+  ) {
+    return this.prisma.user.update({
+      where: { email },
+      data: updateData,
+    });
+  }
 
   async update_user(id: number, UpdateUserDto: Update_UserDto, token_data) {
     await this.checkData(Update_UserDto, UpdateUserDto);
@@ -164,7 +201,6 @@ export class UsersService {
       message: 'User deleted successfully',
     };
   }
-
 
   // async uploadProfilePhoto(
   //   userId: number,

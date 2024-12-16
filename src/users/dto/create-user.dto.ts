@@ -1,16 +1,37 @@
-import { IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateUserDto {
-  token: string;
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 }
 
 export class Update_UserDto {
-  @IsString()
-  name: string;
-  @IsString()
+  @IsEmail()
+  @IsOptional()
   email: string;
+
   @IsString()
+  @IsOptional()
   password: string;
+
+  @IsString()
+  @IsOptional()
+  name: string;
 }
 
 export class Delete_UserDto {
