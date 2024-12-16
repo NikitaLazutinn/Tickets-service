@@ -202,32 +202,32 @@ export class UsersService {
     };
   }
 
-  // async uploadProfilePhoto(
-  //   userId: number,
-  //   imageUrl: string,
-  //   deleteHash: string,
-  // ) {
-  //   return this.prisma.user.update({
-  //     where: { id: userId },
-  //     data: { profilePhoto: imageUrl, deleteHash: deleteHash },
-  //   });
-  // }
+  async uploadProfilePhoto(
+    userId: number,
+    imageUrl: string,
+    deleteHash: string,
+  ) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { avatar: imageUrl, deleteHash: deleteHash },
+    });
+  }
 
-  // async deleteProfilePhoto(userId: number) {
-  //   return this.prisma.user.update({
-  //     where: { id: userId },
-  //     data: { profilePhoto: null, deleteHash: null },
-  //   });
-  // }
+  async deleteProfilePhoto(userId: number) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { avatar: null, deleteHash: null },
+    });
+  }
 
-  // async updateProfilePhoto(
-  //   userId: number,
-  //   imageUrl: string,
-  //   deleteHash: string,
-  // ) {
-  //   return this.prisma.user.update({
-  //     where: { id: userId },
-  //     data: { profilePhoto: imageUrl, deleteHash: deleteHash },
-  //   });
-  // }
+  async updateProfilePhoto(
+    userId: number,
+    imageUrl: string,
+    deleteHash: string,
+  ) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { avatar: imageUrl, deleteHash: deleteHash },
+    });
+  }
 }

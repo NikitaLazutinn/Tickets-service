@@ -8,100 +8,99 @@ datasource db {
 }
 
 model User {
-  id                Int       @id @default(autoincrement())
-  email             String    @unique
+  id                Int         @id @default(autoincrement())
+  email             String      @unique
   password          String
   name              String
   avatar            String?
-  roleId            Int?      @default(1) 
-  role              Role?     @relation(fields: [roleId], references: [id], name: "RoleUsers")
-  isVerified        Boolean   @default(false)
+  roleId            Int?        @default(1)
+  isVerified        Boolean     @default(false)
+  deleteHash        String?
   resetToken        String?
   resetTokenExpires DateTime?
   companyId         Int?
-  company           Company?  @relation(fields: [companyId], references: [id], name: "UserCompany")
-  createdCompanies  Company[] @relation("CompanyCreator")
-  events            Event[]   @relation("EventCreator")
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  createdCompanies  Company[]   @relation("CompanyCreator")
+  events            Event[]     @relation("EventCreator")
   promoCodes        PromoCode[] @relation("UserPromoCodes")
   tickets           Ticket[]
-
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  company           Company?    @relation("UserCompany", fields: [companyId], references: [id])
+  role              Role?       @relation("RoleUsers", fields: [roleId], references: [id])
 }
 
 model Role {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int    @id @default(autoincrement())
+  name        String @unique
   description String
-  users       User[]   @relation("RoleUsers")  
+  users       User[] @relation("RoleUsers")
 }
 
 model Company {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  email       String
-  location    String
-  createdBy   Int
-  creator     User     @relation(fields: [createdBy], references: [id], name: "CompanyCreator")
-  users       User[]   @relation("UserCompany")
-  events      Event[]
-  news        News[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  email     String
+  location  String
+  createdBy Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  creator   User     @relation("CompanyCreator", fields: [createdBy], references: [id])
+  events    Event[]
+  news      News[]
+  users     User[]   @relation("UserCompany")
 }
 
 model Event {
-  id               Int       @id @default(autoincrement())
-  title            String
-  description      String
-  location         String
-  date             DateTime
-  creatorId        Int      
-  creator          User      @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  companyId        Int       
-  company          Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  posterUrl        String    
-  notificationEnabled Boolean @default(true)
-  isVisitorListPublic Boolean @default(false)
-  publishDate      DateTime  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  promoCodes       PromoCode[] @relation("EventPromoCodes") 
-  tickets          Ticket[]    @relation("EventTickets")    
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  location    String
+  date        DateTime
+  creatorId   Int
+  companyId   Int
+  posterUrl   String
+  notificationEnabled Boolean     @default(true)
+  isVisitorListPublic Boolean     @default(false)
+  publishDate         DateTime
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  company             Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  creator             User        @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  promoCodes          PromoCode[] @relation("EventPromoCodes")
+  tickets             Ticket[]    @relation("EventTickets")
 }
 
 model PromoCode {
-  id          Int       @id @default(autoincrement())
-  code        String    @unique
-  discount    Float     
-  expiration  DateTime
-  eventId     Int       
-  event       Event     @relation("EventPromoCodes", fields: [eventId], references: [id])
-  userId      Int
-  user        User      @relation("UserPromoCodes", fields: [userId], references: [id])  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         Int      @id @default(autoincrement())
+  code       String   @unique
+  discount   Float
+  expiration DateTime
+  eventId    Int
+  userId     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  event      Event    @relation("EventPromoCodes", fields: [eventId], references: [id])
+  user       User     @relation("UserPromoCodes", fields: [userId], references: [id])
 }
 
 model News {
-  id          Int      @id @default(autoincrement())
-  title       String
-  content     String
-  companyId   Int      
-  company     Company  @relation(fields: [companyId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  companyId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  company   Company  @relation(fields: [companyId], references: [id])
 }
 
 model Ticket {
-  id          Int       @id @default(autoincrement())
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id])
-  eventId     Int
-  event       Event     @relation("EventTickets", fields: [eventId], references: [id])
-  seatNumber  String
-  price       Float
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  eventId    Int
+  seatNumber String
+  price      Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  event      Event    @relation("EventTickets", fields: [eventId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 }
