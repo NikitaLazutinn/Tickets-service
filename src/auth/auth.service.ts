@@ -6,22 +6,21 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import * as nodemailer from 'nodemailer';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UsersService } from '../users/users.service';
 import { RoleService } from '../role/role.service';
-
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { PrismaService } from 'prisma/prisma.service';
 @Injectable()
 export class AuthService {
-  private prisma = new PrismaClient();
-
   constructor(
     private readonly usersService: UsersService,
     private readonly roleService: RoleService,
     private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
   ) {}
 
   async signUp(createUserDto: CreateUserDto) {
@@ -42,7 +41,7 @@ export class AuthService {
       roleId: defaultRole.id,
     });
     const verifyToken = this.jwtService.sign({ email: user.email });
-    const verifyUrl = `${process.env.LOCALHOST_URL}/auth/verify-email/${verifyToken}`;
+    const verifyUrl = `${process.env.LOCALHOST_URL}/auth/email-confirmation-token/${verifyToken}`;
 
     try {
       await this.sendVerificationEmail(user.email, verifyUrl);
@@ -60,9 +59,7 @@ export class AuthService {
   async verifyEmail(token: string) {
     try {
       const decoded = this.jwtService.verify(token);
-      const user = await this.prisma.user.findUnique({
-        where: { email: decoded.email },
-      });
+      const user = await this.usersService.findUserByEmail(decoded.email);
 
       if (!user) {
         throw new NotFoundException('User not found');
@@ -233,7 +230,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash('', 10);
-    const newUser = await this.usersService.create({
+    const newUser = await this.usersService.createUser({
       email: user.email,
       name: user.firstName + ' ' + user.lastName,
       password: hashedPassword,

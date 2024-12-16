@@ -13,13 +13,13 @@ model User {
   password          String
   name              String
   avatar            String?
-  roleId            Int
-  role              Role      @relation(fields: [roleId], references: [id], name: "RoleUsers")
+  roleId            Int?      @default(1) 
+  role              Role?     @relation(fields: [roleId], references: [id], name: "RoleUsers")
   isVerified        Boolean   @default(false)
   resetToken        String?
   resetTokenExpires DateTime?
-  companyId         Int
-  company           Company  @relation(fields: [companyId], references: [id], name: "UserCompany")
+  companyId         Int?
+  company           Company?  @relation(fields: [companyId], references: [id], name: "UserCompany")
   createdCompanies  Company[] @relation("CompanyCreator")
   events            Event[]   @relation("EventCreator")
   promoCodes        PromoCode[] @relation("UserPromoCodes")

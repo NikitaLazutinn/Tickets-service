@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class RoleService {
-  private prisma = new PrismaClient();
+  constructor(private prisma: PrismaService) {}
 
   async findRoleByName() {
     return this.prisma.role.findUnique({ where: { name: 'User' } });
