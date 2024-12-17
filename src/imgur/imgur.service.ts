@@ -1,3 +1,4 @@
+import { EventsService } from '../events_/events.service';
 import { UsersService } from 'src/users/users.service';
 import {
   BadRequestException,
@@ -10,7 +11,10 @@ import { log } from 'console';
 
 @Injectable()
 export class ImgurService {
-  constructor(private readonly userService: UsersService) {}
+  constructor(
+    private readonly userService: UsersService,
+    private readonly eventsService: EventsService,
+  ) {}
 
   private async uploadToImgur(file) {
     const formData = new FormData();
@@ -38,10 +42,6 @@ export class ImgurService {
   }
 
   private async deleteImageFromImgur(deletehash: string) {
-    console.log(process.env.IMGUR_URL);
-    console.log(process.env.IMGUR_CLIENT_ID);
-    console.log(process.env.IMGUR_CLIENT_SECRET);
-
     await axios.delete(`${process.env.IMGUR_URL}/image/${deletehash}`, {
       headers: { Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}` },
     });
@@ -106,5 +106,29 @@ export class ImgurService {
     await this.userService.deleteProfilePhoto(userId);
 
     return { message: 'Profile photo has been deleted successfully!' };
+  }
+
+  async addEventPoster(file) {
+    const { link: imageUrl, deletehash } = await this.uploadToImgur(file);
+
+    return { imageUrl, deletehash };
+  }
+
+  async updatePostImage(postId: number, file, token_data: string) {
+
+    const event = await this.eventsService.findById(postId);
+    const userId = token_data['id'];
+    if (token_data['roleId'] !== 1 && userId !== event.creatorId) {
+      throw new NotFoundException();
+    }
+
+    if (event.posterUrl && event.deleteHashUrl) {
+      await this.deleteImageFromImgur(event.deleteHashUrl);
+    }
+
+    const { link: imageUrl, deletehash } = await this.uploadToImgur(file);
+    await this.eventsService.uploadImage(postId, imageUrl, deletehash);
+
+    return { message: 'Post image updated successfully!' };
   }
 }
