@@ -88,7 +88,7 @@ export class TicketService {
     return tickets;
   }
 
-  async findOne(id: number, token) {
+  async findOne(id: number, token: string) {
     const ticket = await this.prisma.ticket.findUnique({
       where: { id },
     });
@@ -97,12 +97,12 @@ export class TicketService {
       throw new NotFoundException('Ticket not found');
     }
 
-    if (token.roleId === 3 && ticket.userId !== token.id) {
+    if (token['roleId'] === 3 && ticket.userId !== token['id']) {
       throw new ForbiddenException('Access denied to this ticket');
     }
     if (
-      token.roleId === 2 &&
-      !(await this.isEventCreator(token.id, ticket.eventId))
+      token['roleId'] === 2 &&
+      !(await this.isEventCreator(token['id'], ticket.eventId))
     ) {
       throw new ForbiddenException('Access denied to this ticket');
     }
