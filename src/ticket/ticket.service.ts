@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { PrismaService } from 'prisma/prisma.service';
@@ -7,7 +11,7 @@ import { PrismaService } from 'prisma/prisma.service';
 export class TicketService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createTicketDto: CreateTicketDto) {
+  async create(createTicketDto: CreateTicketDto, token: string) {
     const { eventId, userId, seatNumber, price } = createTicketDto;
 
     const eventExists = await this.prisma.event.findUnique({
@@ -31,39 +35,83 @@ export class TicketService {
     });
   }
 
-  async findAll(query: {
-    page?: number;
-    sort?: string;
-    eventId?: string;
-    userId?: string;
-  }) {
+  async findAll(
+    query: { page?: number; sort?: string; eventId?: string; userId?: string },
+    token: string,
+  ) {
     const { page = 1, sort = 'createdAt', eventId, userId } = query;
 
-    return this.prisma.ticket.findMany({
-      where: {
-        eventId: eventId ? parseInt(eventId) : undefined,
-        userId: userId ? parseInt(userId) : undefined,
-      },
+    let whereClause: any = {};
+
+    if (token['roleId'] === 3) {
+      if (userId && parseInt(userId) !== token['id']) {
+        throw new ForbiddenException('Access denied to other user tickets');
+      }
+      whereClause.userId = token['id'];
+    } else if (token['roleId'] === 2) {
+      const eventsCreatedByUser = await this.prisma.event.findMany({
+        where: { creatorId: token['id'] },
+        select: { id: true },
+      });
+
+      if (!eventsCreatedByUser.length) {
+        throw new NotFoundException('No events found for this organizer');
+      }
+
+      const eventIds = eventsCreatedByUser.map((event) => event.id);
+
+      if (eventId && !eventIds.includes(parseInt(eventId))) {
+        throw new ForbiddenException(
+          `Access denied to tickets for event ID ${eventId}`,
+        );
+      }
+
+      whereClause.eventId = eventId ? parseInt(eventId) : { in: eventIds };
+    } else if (token['roleId'] === 1) {
+      if (eventId) whereClause.eventId = parseInt(eventId);
+      if (userId) whereClause.userId = parseInt(userId);
+    } else {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const tickets = await this.prisma.ticket.findMany({
+      where: whereClause,
       orderBy: { [sort]: 'asc' },
       skip: (page - 1) * 10,
       take: 10,
     });
+
+    if (!tickets.length) {
+      throw new NotFoundException('No tickets found');
+    }
+
+    return tickets;
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, token) {
     const ticket = await this.prisma.ticket.findUnique({
-      where: { id: id },
+      where: { id },
     });
 
     if (!ticket) {
       throw new NotFoundException('Ticket not found');
     }
 
+    if (token.roleId === 3 && ticket.userId !== token.id) {
+      throw new ForbiddenException('Access denied to this ticket');
+    }
+    if (
+      token.roleId === 2 &&
+      !(await this.isEventCreator(token.id, ticket.eventId))
+    ) {
+      throw new ForbiddenException('Access denied to this ticket');
+    }
+
     return ticket;
   }
 
-  async update(id: number, updateTicketDto: UpdateTicketDto) {
-    await this.findOne(id);
+  async update(id: number, updateTicketDto: UpdateTicketDto, token: string) {
+    await this.findOne(id, token);
 
     await this.prisma.ticket.update({
       where: { id: id },
@@ -73,11 +121,21 @@ export class TicketService {
     return { message: 'Ticket updated successfully' };
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
+  async remove(id: number, token: string) {
+    await this.findOne(id, token);
 
     await this.prisma.ticket.delete({ where: { id: id } });
 
     return { message: 'Ticket deleted successfully' };
+  }
+
+  private async isEventCreator(
+    userId: number,
+    eventId: number,
+  ): Promise<boolean> {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+    });
+    return event?.creatorId === userId;
   }
 }
