@@ -21,17 +21,23 @@ export class EventController {
   constructor(private readonly eventsService: EventsService) {}
 
   @UseGuards(AuthUserGuard)
-  @UseInterceptors(FileInterceptor('Poster'))
   @Post()
-  create(
-    @Req() request,
-    @Body() createEventDto: CreateEventDto,
-    @UploadedFile()
-    file,
-  ) {
+  createEvent(@Req() request, @Body() createEventDto: CreateEventDto) {
     const tokenData = request.user;
-    return this.eventsService.create(tokenData, createEventDto, file);
+    return this.eventsService.create(tokenData, createEventDto);
   }
+
+  // @UseGuards(AuthUserGuard)
+  // @UseInterceptors(FileInterceptor('Poster'))
+  // @Post(':id')
+  // AddPoster(
+  //   @Req() request,
+  //   @UploadedFile()
+  //   file,
+  // ) {
+  //   const tokenData = request.user;
+  //   return this.eventsService.create(tokenData, createEventDto, file);
+  // }
 
   @Get()
   findAll() {
@@ -43,13 +49,41 @@ export class EventController {
     return this.eventsService.findOne(+id);
   }
 
+  @UseGuards(AuthUserGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
-    return this.eventsService.update(+id, updateEventDto);
+  update(
+    @Req() request,
+    @Param('id') id: string,
+    @Body() updateEventDto: UpdateEventDto,
+  ) {
+    const tokenData = request.user;
+    return this.eventsService.update(+id, updateEventDto, tokenData);
   }
 
+  @UseGuards(AuthUserGuard)
+  @UseInterceptors(FileInterceptor('Poster'))
+  @Patch('poster/:id')
+  replaceImage(
+    @Req() request,
+    @Param('id') id: string,
+    @UploadedFile()
+    file,
+  ) {
+    const tokenData = request.user;
+    return this.eventsService.updateImage(+id, file, tokenData);
+  }
+
+  @UseGuards(AuthUserGuard)
+  @Delete('poster/:id')
+  deleteImage(@Req() request, @Param('id') id: string) {
+    const tokenData = request.user;
+    return this.eventsService.deleteImage(+id, tokenData);
+  }
+
+  @UseGuards(AuthUserGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.eventsService.remove(+id);
+  remove(@Req() request, @Param('id') id: string) {
+    const tokenData = request.user;
+    return this.eventsService.remove(+id, tokenData);
   }
 }

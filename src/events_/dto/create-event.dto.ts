@@ -17,13 +17,16 @@ export class CreateEventDto {
   @IsString()
   location: string;
 
-  @IsDate()
-  date: Date;
+  @IsString()
+  date: string;
 
   @IsBoolean()
   @IsOptional()
   isVisitorListPublic?: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  notificationEnabled?: boolean;
 }
 
 export class UpdateEventDto extends PartialType(CreateEventDto) {}

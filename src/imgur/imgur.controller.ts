@@ -48,17 +48,4 @@ export class ImgurController {
     return this.imgurService.deleteProfilePhoto(tokenData);
   }
 
-  @UseGuards(AuthUserGuard)
-  @Patch(':eventId/update-image')
-  @UseInterceptors(FileInterceptor('postImage'))
-  async updatePostImage(
-    @Param('postId') postId: number,
-    @UploadedFile() file,
-    @Req() request,
-  ) {
-    const tokenData = request.user;
-    return this.imgurService.updatePostImage(+postId, file, tokenData);
-  }
-
 }
-
