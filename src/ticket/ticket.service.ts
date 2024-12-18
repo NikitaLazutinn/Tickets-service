@@ -63,11 +63,7 @@ export class TicketService {
   }
 
   async update(id: number, updateTicketDto: UpdateTicketDto) {
-    const ticket = await this.prisma.ticket.findUnique({ where: { id: id } });
-
-    if (!ticket) {
-      throw new NotFoundException('Ticket not found');
-    }
+    await this.findOne(id);
 
     await this.prisma.ticket.update({
       where: { id: id },
@@ -78,13 +74,7 @@ export class TicketService {
   }
 
   async remove(id: number) {
-    const ticket = await this.prisma.ticket.findUnique({
-      where: { id: id },
-    });
-
-    if (!ticket) {
-      throw new NotFoundException('Ticket not found');
-    }
+    await this.findOne(id);
 
     await this.prisma.ticket.delete({ where: { id: id } });
 
