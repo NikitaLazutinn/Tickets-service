@@ -13,7 +13,6 @@ import { RoleService } from './role.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { AuthUserGuard } from 'src/guards';
-// import { PostOwnershipGuard } from 'src/post/guards/postOwnership.guard';
 
 @Controller('role')
 export class RoleController {
