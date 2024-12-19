@@ -1,6 +1,7 @@
 import {
   Controller,
   Delete,
+  Param,
   Patch,
   Post,
   Req,
@@ -46,4 +47,5 @@ export class ImgurController {
     const tokenData = request.user;
     return this.imgurService.deleteProfilePhoto(tokenData);
   }
+
 }
