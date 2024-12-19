@@ -49,11 +49,11 @@ CREATE TABLE "Event" (
     "creatorId" INTEGER NOT NULL,
     "companyId" INTEGER NOT NULL,
     "posterUrl" TEXT NOT NULL,
+    "deleteHashUrl" TEXT NOT NULL,
     "notificationEnabled" BOOLEAN NOT NULL DEFAULT true,
     "isVisitorListPublic" BOOLEAN NOT NULL DEFAULT false,
-    "publishDate" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Event_pkey" PRIMARY KEY ("id")
 );
@@ -70,6 +70,14 @@ CREATE TABLE "PromoCode" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "PromoCode_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PromoCodesUsers" (
+    "userId" INTEGER NOT NULL,
+    "promoCodeId" INTEGER NOT NULL,
+
+    CONSTRAINT "PromoCodesUsers_pkey" PRIMARY KEY ("userId","promoCodeId")
 );
 
 -- CreateTable
@@ -128,7 +136,10 @@ ALTER TABLE "Event" ADD CONSTRAINT "Event_creatorId_fkey" FOREIGN KEY ("creatorI
 ALTER TABLE "PromoCode" ADD CONSTRAINT "PromoCode_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PromoCode" ADD CONSTRAINT "PromoCode_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PromoCodesUsers" ADD CONSTRAINT "PromoCodesUsers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PromoCodesUsers" ADD CONSTRAINT "PromoCodesUsers_promoCodeId_fkey" FOREIGN KEY ("promoCodeId") REFERENCES "PromoCode"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "News" ADD CONSTRAINT "News_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
