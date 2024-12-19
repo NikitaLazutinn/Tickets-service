@@ -27,18 +27,6 @@ export class EventController {
     return this.eventsService.create(tokenData, createEventDto);
   }
 
-  // @UseGuards(AuthUserGuard)
-  // @UseInterceptors(FileInterceptor('Poster'))
-  // @Post(':id')
-  // AddPoster(
-  //   @Req() request,
-  //   @UploadedFile()
-  //   file,
-  // ) {
-  //   const tokenData = request.user;
-  //   return this.eventsService.create(tokenData, createEventDto, file);
-  // }
-
   @Get()
   findAll() {
     return this.eventsService.findAll();

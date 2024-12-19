@@ -12,7 +12,6 @@ export class EventsService {
   ) {}
 
   async create(token_data, createEventDto: CreateEventDto) {
-    console.log(token_data);
     if (token_data['roleId'] === 3) {
       throw new NotFoundException();
     }
