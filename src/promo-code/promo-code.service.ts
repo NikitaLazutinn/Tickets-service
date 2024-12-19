@@ -66,16 +66,14 @@ export class PromoCodeService {
         'Access denied, user not Admin or not EventCreator',
       );
     }
-    return this.prisma.promoCode.findMany({
+
+    const promoCodes = await this.prisma.promoCode.findMany({
       where: {
-        Users: {
-          some: { userId },
-        },
-      },
-      include: {
-        Users: true,
+        userId: userId,
       },
     });
+
+    return promoCodes;
   }
 
   async remove(id: number, token: string) {

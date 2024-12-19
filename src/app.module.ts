@@ -4,8 +4,8 @@ import { RoleModule } from './role/role.module';
 import { UsersModule } from './users/users.module';
 import { PrismaModule } from 'prisma/prisma.module';
 import { ImgurModule } from './imgur/imgur.module';
-import { TicketModule } from './ticket/ticket.module';
-import { NewsModule } from './news/news.module';
+// import { TicketModule } from './ticket/ticket.module';
+// import { NewsModule } from './news/news.module';
 import { PromoCodeModule } from './promo-code/promo-code.module';
 
 @Module({
@@ -15,8 +15,6 @@ import { PromoCodeModule } from './promo-code/promo-code.module';
     UsersModule,
     PrismaModule,
     ImgurModule,
-    TicketModule,
-    NewsModule,
     PromoCodeModule,
   ],
   controllers: [],
