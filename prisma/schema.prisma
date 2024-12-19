@@ -23,10 +23,10 @@ model User {
   updatedAt         DateTime    @updatedAt
   createdCompanies  Company[]   @relation("CompanyCreator")
   events            Event[]     @relation("EventCreator")
-  promoCodes        PromoCode[] @relation("UserPromoCodes")
   tickets           Ticket[]
   company           Company?    @relation("UserCompany", fields: [companyId], references: [id])
   role              Role?       @relation("RoleUsers", fields: [roleId], references: [id])
+  promoCodes        PromoCodesUsers[] 
 }
 
 model Role {
@@ -59,11 +59,11 @@ model Event {
   creatorId   Int
   companyId   Int
   posterUrl   String
+  deleteHashUrl String
   notificationEnabled Boolean     @default(true)
   isVisitorListPublic Boolean     @default(false)
-  publishDate         DateTime
   createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
+  updatedAt           DateTime    @default(now())
   company             Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
   creator             User        @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   promoCodes          PromoCode[] @relation("EventPromoCodes")
@@ -80,7 +80,16 @@ model PromoCode {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   event      Event    @relation("EventPromoCodes", fields: [eventId], references: [id])
-  user       User     @relation("UserPromoCodes", fields: [userId], references: [id])
+  Users      PromoCodesUsers[] 
+}
+
+model PromoCodesUsers {
+  userId      Int
+  promoCodeId Int
+  user        User       @relation(fields: [userId], references: [id])
+  promoCode   PromoCode @relation(fields: [promoCodeId], references: [id])
+
+  @@id([userId, promoCodeId])
 }
 
 model News {

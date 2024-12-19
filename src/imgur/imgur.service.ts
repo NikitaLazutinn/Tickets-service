@@ -1,3 +1,4 @@
+import { EventsService } from '../events_/events.service';
 import { UsersService } from 'src/users/users.service';
 import {
   BadRequestException,
@@ -6,15 +7,17 @@ import {
 } from '@nestjs/common';
 import axios from 'axios';
 import * as FormData from 'form-data';
-import { log } from 'console';
 
 @Injectable()
 export class ImgurService {
-  constructor(private readonly userService: UsersService) {}
+  constructor(
+    private readonly userService: UsersService,
+  ) {}
 
-  private async uploadToImgur(file) {
+  async uploadToImgur(file) {
     const formData = new FormData();
     formData.append('image', file.buffer, file.originalname);
+      
 
     try {
       const response = await axios.post(
@@ -31,17 +34,13 @@ export class ImgurService {
       if (link && deletehash) {
         return { link, deletehash };
       }
-      throw new BadRequestException('Something went wrong');
+      throw new BadRequestException('Something went wrong 1');
     } catch (error) {
-      throw new BadRequestException('Something went wrong');
+      throw new BadRequestException(error);
     }
   }
 
-  private async deleteImageFromImgur(deletehash: string) {
-    console.log(process.env.IMGUR_URL);
-    console.log(process.env.IMGUR_CLIENT_ID);
-    console.log(process.env.IMGUR_CLIENT_SECRET);
-
+  async deleteImageFromImgur(deletehash: string) {
     await axios.delete(`${process.env.IMGUR_URL}/image/${deletehash}`, {
       headers: { Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}` },
     });
@@ -77,18 +76,14 @@ export class ImgurService {
       throw new BadRequestException('Profile photo doesn`t exist');
     }
 
-    console.log('1');
     await this.deleteImageFromImgur(user.deleteHash);
-    console.log('2');
     const { link: uploadedImageUrl, deletehash } =
-      await this.uploadToImgur(file);
-    console.log('3');
+    await this.uploadToImgur(file);
     await this.userService.updateProfilePhoto(
       userId,
       uploadedImageUrl,
       deletehash,
     );
-    console.log('4');
     return { message: 'Profile photo has been updated successfully!' };
   }
 
@@ -107,4 +102,12 @@ export class ImgurService {
 
     return { message: 'Profile photo has been deleted successfully!' };
   }
+
+  async addEventPoster(file) {
+
+    const { link: imageUrl, deletehash } = await this.uploadToImgur(file);
+
+    return { imageUrl, deletehash };
+  }
+
 }
