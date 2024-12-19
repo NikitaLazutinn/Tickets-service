@@ -42,9 +42,9 @@ model Company {
   email     String
   location  String
   createdBy Int
+  isVerified Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  isVerified Boolean @default(false)
   creator   User     @relation("CompanyCreator", fields: [createdBy], references: [id])
   events    Event[]
   news      News[]

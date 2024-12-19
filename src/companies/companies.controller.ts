@@ -56,4 +56,9 @@ export class CompaniesController {
     const token = req.user;
     return this.companyService.delete(+id, token);
   }
+
+  @Get('email-confirmation-token/:token')
+  verifyCompanyEmail(@Param('token') token: string) {
+    return this.companyService.verifyCompanyEmail(token);
+  }
 }
