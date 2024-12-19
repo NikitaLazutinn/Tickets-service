@@ -10,6 +10,7 @@ import { PromoCodeModule } from './promo-code/promo-code.module';
 import { EventsModule } from './events_/events.module';
 import { CompaniesModule } from './companies/companies.module'
 
+
 @Module({
   imports: [
     AuthModule,
@@ -17,6 +18,7 @@ import { CompaniesModule } from './companies/companies.module'
     UsersModule,
     PrismaModule,
     ImgurModule,
+    NewsModule,
     TicketModule,
     EventsModule, 
     CompaniesModule, 
