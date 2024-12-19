@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { PrismaModule } from 'prisma/prisma.module';
 import { ImgurModule } from './imgur/imgur.module';
 import { TicketModule } from './ticket/ticket.module';
+import { StripeModule } from './stripe/stripe.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { TicketModule } from './ticket/ticket.module';
     PrismaModule,
     ImgurModule,
     TicketModule,
+    StripeModule,
   ],
   controllers: [],
   providers: [],
