@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import axios from 'axios';
 import * as FormData from 'form-data';
-import { log } from 'console';
 
 @Injectable()
 export class ImgurService {
