@@ -7,9 +7,9 @@ export class StripeController {
 
   @Post('create-session/:ticketId')
   async createPaymentSession(
-    @Param('ticketId') ticketId: number,
+    @Param('ticketId') ticketId: string,
     @Body('userId') userId: number,
   ) {
-    return this.stripeService.createPaymentSession(ticketId, userId);
+    return this.stripeService.createPaymentSession(+ticketId, userId);
   }
 }

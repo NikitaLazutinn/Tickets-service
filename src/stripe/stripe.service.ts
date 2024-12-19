@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import Stripe from 'stripe';
 
@@ -18,7 +18,11 @@ export class StripeService {
     });
 
     if (!ticket) {
-      throw new Error('Ticket not found');
+      throw new NotFoundException('Ticket not found');
+    }
+
+    if (!userId) {
+      throw new NotFoundException('User ID is required');
     }
 
     const session = await this.stripe.checkout.sessions.create({
