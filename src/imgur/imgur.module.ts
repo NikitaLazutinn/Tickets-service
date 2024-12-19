@@ -7,5 +7,6 @@ import { UsersModule } from 'src/users/users.module';
   controllers: [ImgurController],
   providers: [ImgurService],
   imports: [UsersModule],
+  exports: [ImgurService],
 })
 export class ImgurModule {}
