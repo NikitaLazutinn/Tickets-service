@@ -4,9 +4,17 @@ import { RoleModule } from './role/role.module';
 import { UsersModule } from './users/users.module';
 import { PrismaModule } from 'prisma/prisma.module';
 import { ImgurModule } from './imgur/imgur.module';
+import { TicketModule } from './ticket/ticket.module';
 
 @Module({
-  imports: [AuthModule, RoleModule, UsersModule, PrismaModule, ImgurModule],
+  imports: [
+    AuthModule,
+    RoleModule,
+    UsersModule,
+    PrismaModule,
+    ImgurModule,
+    TicketModule,
+  ],
   controllers: [],
   providers: [],
 })
