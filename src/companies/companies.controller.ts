@@ -1,5 +1,3 @@
-import { CompaniesService } from './companies.service';
-import { AuthUserGuard } from 'src/guards';
 import {
   Controller,
   Get,
@@ -10,22 +8,52 @@ import {
   Delete,
   UseGuards,
   Req,
-  UseInterceptors,
-  UploadedFile,
 } from '@nestjs/common';
-import { CreateCompanyDto, UpdateCompanyDto } from './dto/create-company.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { CompaniesService } from './companies.service';
+import { CreateCompanyDto } from './dto/create-company.dto';
+import { UpdateCompanyDto } from './dto/create-company.dto';
+import { AuthUserGuard } from 'src/guards';
 
-@Controller('companies')
+@Controller('company')
 export class CompaniesController {
-  constructor(private readonly companiesService: CompaniesService) {}
+  constructor(private readonly companyService: CompaniesService) {}
 
   @UseGuards(AuthUserGuard)
   @Post()
-  createCompany(@Req() request, @Body() createCompanyDto: CreateCompanyDto) {
-    const tokenData = request.user;
-    return this.companiesService.create(tokenData, createCompanyDto);
+  create(@Req() req, @Body() createCompanyDto: CreateCompanyDto) {
+    const token = req.user;
+    return this.companyService.create(createCompanyDto, token);
   }
 
-  
+  @UseGuards(AuthUserGuard)
+  @Get()
+  findAll(@Req() req) {
+    const token = req.user;
+    return this.companyService.findAll(token);
+  }
+
+  @UseGuards(AuthUserGuard)
+  @Get(':id')
+  findOne(@Param('id') id: string, @Req() req) {
+    const token = req.user;
+    return this.companyService.findOne(+id, token);
+  }
+
+  @UseGuards(AuthUserGuard)
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateCompanyDto: UpdateCompanyDto,
+    @Req() req,
+  ) {
+    const token = req.user;
+    return this.companyService.update(+id, updateCompanyDto, token);
+  }
+
+  @UseGuards(AuthUserGuard)
+  @Delete(':id')
+  remove(@Param('id') id: string, @Req() req) {
+    const token = req.user;
+    return this.companyService.delete(+id, token);
+  }
 }
