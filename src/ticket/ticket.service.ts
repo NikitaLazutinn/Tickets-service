@@ -6,21 +6,23 @@ import {
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { EventsService } from 'src/events_/events.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class TicketService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventsService: EventsService,
+    private userService: UsersService,
+  ) {}
 
   async create(createTicketDto: CreateTicketDto, token: string) {
     const { eventId, userId, seatNumber, price } = createTicketDto;
 
-    const eventExists = await this.prisma.event.findUnique({
-      where: { id: eventId },
-    });
+    const eventExists = await this.eventsService.findOne(eventId);
 
-    const userExists = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const userExists = await this.userService.find(userId);
 
     if (!eventExists) {
       throw new NotFoundException(`Event with ID ${eventId} does not exist.`);
@@ -102,7 +104,7 @@ export class TicketService {
     }
     if (
       token['roleId'] === 2 &&
-      !(await this.isEventCreator(token['id'], ticket.eventId))
+      !(await this.eventsService.isEventCreator(token['id'], ticket.eventId))
     ) {
       throw new ForbiddenException('Access denied to this ticket');
     }
@@ -127,15 +129,5 @@ export class TicketService {
     await this.prisma.ticket.delete({ where: { id: id } });
 
     return { message: 'Ticket deleted successfully' };
-  }
-
-  private async isEventCreator(
-    userId: number,
-    eventId: number,
-  ): Promise<boolean> {
-    const event = await this.prisma.event.findUnique({
-      where: { id: eventId },
-    });
-    return event?.creatorId === userId;
   }
 }
