@@ -42,7 +42,7 @@ export class StripeService {
         },
       ],
       success_url: `${process.env.LOCALHOST_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: 'http://localhost:3000/cancel',
+      cancel_url: `${process.env.LOCALHOST_URL}/cancel`,
       metadata: {
         userId: userId.toString(),
       },
