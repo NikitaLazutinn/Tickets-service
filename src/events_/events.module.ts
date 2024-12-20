@@ -8,5 +8,6 @@ import { ImgurModule } from 'src/imgur/imgur.module';
   imports: [PrismaModule, ImgurModule],
   controllers: [EventController],
   providers: [EventsService],
+  exports: [EventsService],
 })
 export class EventsModule {}

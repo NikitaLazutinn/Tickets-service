@@ -129,7 +129,6 @@ export class EventsService {
   }
 
   async deleteImage(id: number, token_data) {
-
     const event = await this.findById(id);
     if (event === null) {
       throw new NotFoundException();
@@ -145,12 +144,19 @@ export class EventsService {
 
     await this.prisma.event.update({
       where: { id },
-      data: {deleteHashUrl: '-', posterUrl: '-'},
+      data: { deleteHashUrl: '-', posterUrl: '-' },
     });
 
     return {
       statusCode: 204,
-      message: 'Image deleted successfully'
+      message: 'Image deleted successfully',
     };
+  }
+
+  async isEventCreator(userId: number, eventId: number): Promise<boolean> {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+    });
+    return event?.creatorId === userId;
   }
 }
