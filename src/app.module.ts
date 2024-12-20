@@ -5,11 +5,11 @@ import { UsersModule } from './users/users.module';
 import { PrismaModule } from 'prisma/prisma.module';
 import { ImgurModule } from './imgur/imgur.module';
 import { TicketModule } from './ticket/ticket.module';
+import { StripeModule } from './stripe/stripe.module';
 import { NewsModule } from './news/news.module';
 import { PromoCodeModule } from './promo-code/promo-code.module';
 import { EventsModule } from './events_/events.module';
 import { CompaniesModule } from './companies/companies.module'
-
 
 @Module({
   imports: [
@@ -20,6 +20,7 @@ import { CompaniesModule } from './companies/companies.module'
     ImgurModule,
     NewsModule,
     TicketModule,
+    StripeModule,
     EventsModule, 
     CompaniesModule, 
     PromoCodeModule
