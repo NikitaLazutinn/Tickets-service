@@ -6,17 +6,19 @@ import {
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { CompaniesService } from 'src/companies/companies.service';
 
 @Injectable()
 export class NewsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly companiesService: CompaniesService,
+  ) {}
 
-  async create(createNewsDto: CreateNewsDto, token) {
+  async create(createNewsDto: CreateNewsDto, token: string) {
     const { title, content, companyId } = createNewsDto;
 
-    const companyExists = await this.prisma.company.findUnique({
-      where: { id: companyId },
-    });
+    const companyExists = await this.companiesService.findOne(companyId, token);
 
     if (!companyExists) {
       throw new NotFoundException(
@@ -24,14 +26,14 @@ export class NewsService {
       );
     }
 
-    if (token.roleId === 1) {
+    if (token['roleId'] === 1) {
       return this.prisma.news.create({ data: { title, content, companyId } });
-    } else if (token.roleId === 2 || token.roleId === 3) {
-      if (!token.companyId) {
+    } else if (token['roleId'] === 2 || token['roleId'] === 3) {
+      if (!token['companyId']) {
         throw new ForbiddenException('You are not assigned to any company');
       }
 
-      if (token.companyId !== companyId) {
+      if (token['companyId'] !== companyId) {
         throw new ForbiddenException(
           'Access denied to create news for this company',
         );
