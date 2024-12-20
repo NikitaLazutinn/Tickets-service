@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param } from '@nestjs/common';
+import { Controller, Post, Body, Param, Query } from '@nestjs/common';
 import { StripeService } from './stripe.service';
 
 @Controller('stripe')
@@ -8,7 +8,7 @@ export class StripeController {
   @Post('create-session/:ticketId')
   async createPaymentSession(
     @Param('ticketId') ticketId: string,
-    @Body('userId') userId: number,
+    @Query('userId') userId: number,
   ) {
     return this.stripeService.createPaymentSession(+ticketId, userId);
   }
