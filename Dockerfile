@@ -10,6 +10,8 @@ COPY package*.json ./
 # Install application dependencies
 RUN npm install
 
+RUN npm install stripe
+
 # Copy the rest of the project files
 COPY . .
 
