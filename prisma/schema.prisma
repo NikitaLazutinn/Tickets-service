@@ -109,6 +109,7 @@ model Ticket {
   eventId    Int
   seatNumber String
   price      Float
+  isSold     Boolean @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   event      Event    @relation("EventTickets", fields: [eventId], references: [id])

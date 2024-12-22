@@ -61,4 +61,22 @@ export class TicketController {
     const token = req.user;
     return this.ticketService.remove(+id, token);
   }
+
+  @UseGuards(AuthUserGuard)
+  @Post('generate-ticket-pdf/:ticketId')
+  async generateTicketPDF(@Param('ticketId') ticketId: string, @Req() req) {
+    const token = req.user;
+    const dropboxLink =
+      await this.ticketService.generateTicketPdfAndUploadToDropbox(
+        token,
+        +ticketId,
+      );
+    return { link: dropboxLink };
+  }
+
+  @Get(':ticketId/sale')
+  async redeemTicket(@Param('ticketId') ticketId: number, @Req() req) {
+    const token = req.user;
+    return this.ticketService.saleTicket(ticketId, token);
+  }
 }

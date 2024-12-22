@@ -11,6 +11,7 @@ import {
   Req,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto, UpdateEventDto } from './dto/create-event.dto';

@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsDate,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -19,6 +20,9 @@ export class CreateEventDto {
 
   @IsString()
   date: string;
+
+  @IsNumber()
+  companyId: number;
 
   @IsBoolean()
   @IsOptional()
