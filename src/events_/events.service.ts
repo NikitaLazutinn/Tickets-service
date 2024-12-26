@@ -160,4 +160,20 @@ export class EventsService {
     });
     return event?.creatorId === userId;
   }
+
+  async findEventsWithRatings() {
+    const events = await this.prisma.event.findMany({
+      include: { ratings: true },
+    });
+    return events;
+  }
+  async findOneEventWithRatings(eventId: number) {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      include: {
+        ratings: true,
+      },
+    });
+    return event;
+  }
 }
