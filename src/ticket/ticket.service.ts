@@ -27,10 +27,6 @@ export class TicketService {
     private readonly emailService: EmailService,
   ) {}
 
-  private readonly dropbox = new Dropbox({
-    accessToken: process.env.DROPBOX_ACCESS_TOKEN,
-  });
-
   async create(createTicketDto: CreateTicketDto, token: string) {
     const { eventId, userId, seatNumber, price } = createTicketDto;
 
