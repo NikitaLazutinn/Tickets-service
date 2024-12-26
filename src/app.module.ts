@@ -9,7 +9,9 @@ import { StripeModule } from './stripe/stripe.module';
 import { NewsModule } from './news/news.module';
 import { PromoCodeModule } from './promo-code/promo-code.module';
 import { EventsModule } from './events_/events.module';
-import { CompaniesModule } from './companies/companies.module'
+import { CompaniesModule } from './companies/companies.module';
+import { EmailModule } from './email/email.module';
+import { PdfModule } from './pdf/pdf.module';
 
 @Module({
   imports: [
@@ -21,9 +23,11 @@ import { CompaniesModule } from './companies/companies.module'
     NewsModule,
     TicketModule,
     StripeModule,
-    EventsModule, 
-    CompaniesModule, 
-    PromoCodeModule
+    EventsModule,
+    CompaniesModule,
+    PromoCodeModule,
+    EmailModule,
+    PdfModule,
   ],
   controllers: [],
   providers: [],

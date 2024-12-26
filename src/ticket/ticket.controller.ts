@@ -74,9 +74,8 @@ export class TicketController {
     return { link: dropboxLink };
   }
 
-  @Get(':ticketId/sale')
-  async redeemTicket(@Param('ticketId') ticketId: number, @Req() req) {
-    const token = req.user;
-    return this.ticketService.saleTicket(ticketId, token);
+  @Get(':ticketId/validate')
+  async redeemTicket(@Param('ticketId') ticketId: number) {
+    return this.ticketService.validateTicket(ticketId);
   }
 }
