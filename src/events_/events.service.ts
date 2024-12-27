@@ -176,4 +176,11 @@ export class EventsService {
     });
     return event;
   }
+
+  async updateEventAverageRating(eventId: number, averageRating: number) {
+    await this.prisma.event.update({
+      where: { id: eventId },
+      data: { averageRating },
+    });
+  }
 }

@@ -45,9 +45,13 @@ export class RatingController {
   }
 
   @UseGuards(AuthUserGuard)
-  @Delete(':id')
-  remove(@Param('id') id: string, @Req() req) {
+  @Delete(':userId/:eventId')
+  remove(
+    @Param('userId') userId: string,
+    @Param('eventId') eventId: string,
+    @Req() req,
+  ) {
     const token = req.user;
-    return this.ratingService.remove(+id, token);
+    return this.ratingService.remove(+userId, +eventId, token);
   }
 }

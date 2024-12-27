@@ -9,7 +9,6 @@ import { CreateRatingDto } from './dto/create-rating.dto';
 import { UpdateRatingDto } from './dto/update-rating.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { EventsService } from 'src/events_/events.service';
-import { title } from 'process';
 
 @Injectable()
 export class RatingService {
@@ -17,13 +16,8 @@ export class RatingService {
     private readonly prisma: PrismaService,
     private readonly eventsService: EventsService,
   ) {}
-  async createRating(dto: CreateRatingDto) {
-    const { eventId, rating, userId } = dto;
 
-    if (rating < 1 || rating > 5) {
-      throw new BadRequestException('Rating must be between 1 and 5');
-    }
-
+  async checkAndThrowIfRatingExists(userId: number, eventId: number) {
     const existingRating = await this.prisma.rating.findUnique({
       where: { userId_eventId: { userId, eventId } },
     });
@@ -31,6 +25,22 @@ export class RatingService {
     if (existingRating) {
       throw new ConflictException('Rating already exists');
     }
+  }
+
+  async checkAndThrowIfRatingNotFound(userId: number, eventId: number) {
+    const existingRating = await this.prisma.rating.findUnique({
+      where: { userId_eventId: { userId, eventId } },
+    });
+
+    if (!existingRating) {
+      throw new NotFoundException('Rating not found');
+    }
+  }
+
+  async createRating(dto: CreateRatingDto) {
+    const { eventId, rating, userId } = dto;
+
+    await this.checkAndThrowIfRatingExists(userId, eventId);
 
     await this.prisma.rating.create({
       data: { userId, eventId, rating },
@@ -46,17 +56,7 @@ export class RatingService {
   async updateRating(dto: UpdateRatingDto, token: string) {
     const { eventId, rating, userId } = dto;
 
-    if (rating < 1 || rating > 5) {
-      throw new BadRequestException('Rating must be between 1 and 5');
-    }
-
-    const existingRating = await this.prisma.rating.findUnique({
-      where: { userId_eventId: { userId, eventId } },
-    });
-
-    if (!existingRating) {
-      throw new NotFoundException('Rating not found');
-    }
+    await this.checkAndThrowIfRatingNotFound(userId, eventId);
 
     const isOwner = userId === token['id'];
     const isAdmin = token['roleId'] === 1;
@@ -88,10 +88,7 @@ export class RatingService {
     const averageRating =
       ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
 
-    await this.prisma.event.update({
-      where: { id: eventId },
-      data: { averageRating },
-    });
+    await this.eventsService.updateEventAverageRating(eventId, averageRating);
   }
 
   async getRatingForEvent(eventId: number) {
@@ -124,17 +121,11 @@ export class RatingService {
     }));
   }
 
-  async remove(id: number, token: any) {
-    const rating = await this.prisma.rating.findUnique({
-      where: { id },
-    });
+  async remove(userId: number, eventId: number, token: string) {
+    await this.checkAndThrowIfRatingNotFound(userId, eventId);
 
-    if (!rating) {
-      throw new NotFoundException('Rating not found');
-    }
-
-    const isOwner = rating.userId === token.id;
-    const isAdmin = token.roleId === 1;
+    const isOwner = userId === token['id'];
+    const isAdmin = token['roleId'] === 1;
 
     if (!isOwner && !isAdmin) {
       throw new ForbiddenException(
@@ -143,7 +134,7 @@ export class RatingService {
     }
 
     await this.prisma.rating.delete({
-      where: { id },
+      where: { userId_eventId: { userId, eventId } },
     });
 
     return { message: 'Rating deleted successfully' };
