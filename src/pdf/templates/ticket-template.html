@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Квиток</title>
+    <style>
+      body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+        background-color: #f9f9f9;
+        width: 210mm;
+        height: 297mm;
+      }
+
+      .ticket-container {
+        width: 90%;
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border: 2px solid #333;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        height: calc(297mm - 40px);
+        box-sizing: border-box;
+        overflow: auto;
+      }
+
+      .ticket-header {
+        font-size: 24px;
+        font-weight: bold;
+        color: #1e3d58;
+        margin-bottom: 20px;
+        padding: 10px;
+        background-color: #f1f1f1;
+        border-radius: 8px;
+      }
+
+      .poster-container {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto 20px;
+        overflow: hidden;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .poster {
+        width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+      }
+
+      .ticket-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin: 15px 0;
+        word-wrap: break-word;
+      }
+
+      .ticket-details {
+        font-size: 14px;
+        color: #555;
+        margin: 15px 0;
+        text-align: left;
+      }
+
+      .ticket-details p {
+        margin: 5px 0;
+        word-wrap: break-word;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .qr-code {
+        margin-top: 20px;
+      }
+
+      .footer {
+        font-size: 12px;
+        color: #888;
+        margin-top: 30px;
+      }
+
+      .footer p {
+        margin: 5px 0;
+      }
+
+      .footer a {
+        color: #1e3d58;
+        text-decoration: none;
+      }
+
+      .footer a:hover {
+        text-decoration: underline;
+      }
+
+      .bordered {
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ticket-container">
+      <div class="ticket-header">ЦЕ ВАШ КВИТОК!</div>
+
+      <div class="poster-container">
+        <img class="poster" src="{{posterUrl}}" alt="Poster" />
+      </div>
+
+      <div class="ticket-title">{{eventTitle}}</div>
+
+      <div class="ticket-details bordered">
+        <p><strong>Дата:</strong> {{date}}</p>
+        <p><strong>Місце проведення:</strong> {{location}}</p>
+        <p><strong>Місце в залі:</strong> {{seat}}</p>
+        <p><strong>Ціна:</strong> {{price}} грн</p>
+      </div>
+
+      <div class="qr-code">
+        <img src="{{qrCodeDataUrl}}" width="120" height="120" alt="QR Code" />
+      </div>
+
+      <div class="footer">
+        <p>РОЗДРУКУЙТЕ І ПОКАЖІТЬ ВЕСЬ ЛИСТ НА ВХОДІ.</p>
+        <p>Якщо у вас виникли проблеми, зверніться до служби підтримки.</p>
+        <p>Залишайтесь на зв'язку з нами для отримання додаткових переваг!</p>
+        <p>
+          Відвідайте наш сайт:
+          <a href="https://www.quick-tick.com" target="_blank"
+            >www.quick-tick.com</a
+          >
+        </p>
+        <p>
+          Для зв'язку пишіть нам на:
+          <a href="mailto:quick-tick@example.com">quick-tick@example.com</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

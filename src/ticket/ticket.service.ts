@@ -145,12 +145,22 @@ export class TicketService {
     const user = await this.userService.find(token['userId']);
     const ticket = await this.prisma.ticket.findUnique({
       where: { id: ticketId },
+      include: { event: true },
     });
-    const pdfPath = await this.pdfService.generateTicketPdf(ticket);
 
     if (!user || !ticket) {
-      throw new BadRequestException('User or ticket not found');
+      throw new NotFoundException('User or ticket not found');
     }
+
+    const pdfPath = await this.pdfService.generateTicketPdf({
+      id: ticket.id,
+      eventTitle: ticket.event.title,
+      date: new Date(ticket.event.date).toLocaleDateString(),
+      location: ticket.event.location,
+      seat: ticket.seatNumber,
+      price: ticket.price,
+      posterUrl: ticket.event.posterUrl,
+    });
 
     try {
       await this.emailService.sendEmail(
