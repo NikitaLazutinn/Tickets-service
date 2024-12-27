@@ -2,12 +2,13 @@ import { ImgurService } from './../imgur/imgur.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateEventDto, UpdateEventDto } from './dto/create-event.dto';
+import { CompaniesService } from 'src/companies/companies.service';
 
 @Injectable()
 export class EventsService {
   constructor(
     private readonly prisma: PrismaService,
-    //private readonly companiesService: CompaniesService,
+    private readonly companiesService: CompaniesService,
     private readonly imgurService: ImgurService,
   ) {}
 
@@ -22,7 +23,7 @@ export class EventsService {
       location: createEventDto.location,
       date: new Date(createEventDto.date),
       creatorId: token_data['userId'],
-      companyId: 0, //this.companiesService.findByPerson(token_data['userId']).Id,
+      companyId: createEventDto.companyId,
       posterUrl: '-',
       deleteHashUrl: '-',
       notificationEnabled: createEventDto.notificationEnabled

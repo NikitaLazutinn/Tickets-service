@@ -1,6 +1,8 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -8,20 +10,27 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { EventsService } from 'src/events_/events.service';
 import { UsersService } from 'src/users/users.service';
+import { Dropbox } from 'dropbox';
+import * as fs from 'fs';
+import { DropboxService } from './dropbox/dropbox.service';
+import { PdfService } from 'src/pdf/pdf.service';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class TicketService {
   constructor(
-    private prisma: PrismaService,
-    private eventsService: EventsService,
-    private userService: UsersService,
+    private readonly prisma: PrismaService,
+    private readonly eventsService: EventsService,
+    private readonly userService: UsersService,
+    private readonly dropboxService: DropboxService,
+    private readonly pdfService: PdfService,
+    private readonly emailService: EmailService,
   ) {}
 
   async create(createTicketDto: CreateTicketDto, token: string) {
     const { eventId, userId, seatNumber, price } = createTicketDto;
 
     const eventExists = await this.eventsService.findOne(eventId);
-
     const userExists = await this.userService.find(userId);
 
     if (!eventExists) {
@@ -43,7 +52,7 @@ export class TicketService {
   ) {
     const { page = 1, sort = 'createdAt', eventId, userId } = query;
 
-    let whereClause: any = {};
+    const whereClause: any = {};
 
     if (token['roleId'] === 3) {
       if (userId && parseInt(userId) !== token['id']) {
@@ -102,6 +111,7 @@ export class TicketService {
     if (token['roleId'] === 3 && ticket.userId !== token['id']) {
       throw new ForbiddenException('Access denied to this ticket');
     }
+
     if (
       token['roleId'] === 2 &&
       !(await this.eventsService.isEventCreator(token['id'], ticket.eventId))
@@ -116,7 +126,7 @@ export class TicketService {
     await this.findOne(id, token);
 
     await this.prisma.ticket.update({
-      where: { id: id },
+      where: { id },
       data: updateTicketDto,
     });
 
@@ -126,8 +136,58 @@ export class TicketService {
   async remove(id: number, token: string) {
     await this.findOne(id, token);
 
-    await this.prisma.ticket.delete({ where: { id: id } });
+    await this.prisma.ticket.delete({ where: { id } });
 
     return { message: 'Ticket deleted successfully' };
+  }
+
+  async generateTicketPdfAndUploadToDropbox(token: string, ticketId: number) {
+    const user = await this.userService.find(token['userId']);
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id: ticketId },
+    });
+    const pdfPath = await this.pdfService.generateTicketPdf(ticket);
+
+    if (!user || !ticket) {
+      throw new BadRequestException('User or ticket not found');
+    }
+
+    try {
+      await this.emailService.sendEmail(
+        user.email,
+        'Your Ticket PDF',
+        'Thank you for your payment.',
+        [{ filename: 'ticket.pdf', path: pdfPath }],
+      );
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to send ticket PDF email');
+    }
+
+    const dropboxLink = await this.dropboxService.uploadFile(pdfPath);
+
+    fs.unlinkSync(pdfPath);
+
+    return dropboxLink;
+  }
+
+  async validateTicket(ticketId: number) {
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id: ticketId },
+    });
+
+    if (!ticket) {
+      throw new NotFoundException('Ticket not found');
+    }
+
+    if (ticket.isValidate) {
+      throw new ForbiddenException('Ticket has already been validate');
+    }
+
+    await this.prisma.ticket.update({
+      where: { id: ticketId },
+      data: { isValidate: true },
+    });
+
+    return { message: 'Ticket validate successfully' };
   }
 }

@@ -33,6 +33,7 @@ CREATE TABLE "Company" (
     "email" TEXT NOT NULL,
     "location" TEXT NOT NULL,
     "createdBy" INTEGER NOT NULL,
+    "isVerified" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -49,6 +50,7 @@ CREATE TABLE "Event" (
     "creatorId" INTEGER NOT NULL,
     "companyId" INTEGER NOT NULL,
     "posterUrl" TEXT NOT NULL,
+    "deleteHashUrl" TEXT NOT NULL,
     "notificationEnabled" BOOLEAN NOT NULL DEFAULT true,
     "isVisitorListPublic" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -98,6 +100,7 @@ CREATE TABLE "Ticket" (
     "eventId" INTEGER NOT NULL,
     "seatNumber" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
+    "isSold" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
