@@ -27,6 +27,7 @@ model User {
   company           Company?    @relation("UserCompany", fields: [companyId], references: [id])
   role              Role?       @relation("RoleUsers", fields: [roleId], references: [id])
   promoCodes        PromoCodesUsers[] 
+  savedEvents       SavedEvent[]
 }
 
 model Role {
@@ -69,6 +70,7 @@ model Event {
   creator             User        @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   promoCodes          PromoCode[] @relation("EventPromoCodes")
   tickets             Ticket[]    @relation("EventTickets")
+  savedEvents       SavedEvent[]
 }
 
 model PromoCode {
@@ -114,4 +116,14 @@ model Ticket {
   updatedAt  DateTime @updatedAt
   event      Event    @relation("EventTickets", fields: [eventId], references: [id])
   user       User     @relation(fields: [userId], references: [id])
+}
+
+model SavedEvent {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  eventId     Int
+  savedAt     DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  event       Event    @relation(fields: [eventId], references: [id])
+  @@unique([userId, eventId]) 
 }
