@@ -35,17 +35,14 @@ export class EventsService {
 
     let coordinates = createEventDto.coordinates;
     if (!coordinates) {
-      const { latitude, longitude } = await this.getCoordinates(
-        createEventDto.location,
-      );
-      coordinates = `${latitude},${longitude}`;
+      coordinates = await this.getCoordinates(createEventDto.location);
     }
 
     const data = {
       title: createEventDto.title,
       description: createEventDto.description,
       location: createEventDto.location,
-      coordinates,
+      coordinates: coordinates,
       date: new Date(createEventDto.date),
       creatorId: token_data['userId'],
       companyId: createEventDto.companyId,
