@@ -33,16 +33,23 @@ export class EventsService {
       throw new NotFoundException();
     }
 
-    let coordinates = createEventDto.coordinates;
-    if (!coordinates) {
-      coordinates = await this.getCoordinates(createEventDto.location);
+    let latitude;
+    let longitude;
+    if (createEventDto.latitude && createEventDto.longitude) {
+      latitude = createEventDto.latitude;
+      longitude = createEventDto.longitude;
+    } else {
+      const coordinates = await this.getCoordinates(createEventDto.location);
+      latitude = coordinates.latitude;
+      longitude = coordinates.longitude;
     }
 
     const data = {
       title: createEventDto.title,
       description: createEventDto.description,
       location: createEventDto.location,
-      coordinates: coordinates,
+      latitude: latitude,
+      longitude: longitude,
       date: new Date(createEventDto.date),
       creatorId: token_data['userId'],
       companyId: createEventDto.companyId,
@@ -58,8 +65,6 @@ export class EventsService {
     const event = await this.prisma.event.create({
       data: data,
     });
-
-    console.log(coordinates);
 
     return {
       statusCode: 201,
