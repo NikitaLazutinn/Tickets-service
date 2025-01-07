@@ -56,6 +56,7 @@ CREATE TABLE "Event" (
     "isVisitorListPublic" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "averageRating" DOUBLE PRECISION DEFAULT 0.0,
 
     CONSTRAINT "Event_pkey" PRIMARY KEY ("id")
 );
@@ -108,6 +109,26 @@ CREATE TABLE "Ticket" (
     CONSTRAINT "Ticket_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Rating" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "eventId" INTEGER NOT NULL,
+    "rating" INTEGER NOT NULL,
+
+    CONSTRAINT "Rating_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SavedEvent" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "eventId" INTEGER NOT NULL,
+    "savedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "SavedEvent_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
@@ -119,6 +140,12 @@ CREATE UNIQUE INDEX "Company_name_key" ON "Company"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PromoCode_code_key" ON "PromoCode"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Rating_userId_eventId_key" ON "Rating"("userId", "eventId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SavedEvent_userId_eventId_key" ON "SavedEvent"("userId", "eventId");
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -152,3 +179,15 @@ ALTER TABLE "Ticket" ADD CONSTRAINT "Ticket_eventId_fkey" FOREIGN KEY ("eventId"
 
 -- AddForeignKey
 ALTER TABLE "Ticket" ADD CONSTRAINT "Ticket_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Rating" ADD CONSTRAINT "Rating_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Rating" ADD CONSTRAINT "Rating_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SavedEvent" ADD CONSTRAINT "SavedEvent_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SavedEvent" ADD CONSTRAINT "SavedEvent_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

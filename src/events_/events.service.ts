@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateEventDto, UpdateEventDto } from './dto/create-event.dto';
 import { CompaniesService } from 'src/companies/companies.service';
+import axios from 'axios';
 
 @Injectable()
 export class EventsService {
@@ -12,15 +13,39 @@ export class EventsService {
     private readonly imgurService: ImgurService,
   ) {}
 
+  async getCoordinates(
+    location: string,
+  ): Promise<{ latitude: number; longitude: number }> {
+    const apiKey = process.env.LOCATION_IQ_API_KEY;
+    const url = `https://us1.locationiq.com/v1/search.php?key=${apiKey}&q=${encodeURIComponent(location)}&format=json`;
+
+    const response = await axios.get(url);
+    const data = response.data[0];
+
+    return {
+      latitude: parseFloat(data.lat),
+      longitude: parseFloat(data.lon),
+    };
+  }
+
   async create(token_data, createEventDto: CreateEventDto) {
     if (token_data['roleId'] === 3) {
       throw new NotFoundException();
+    }
+
+    let coordinates = createEventDto.coordinates;
+    if (!coordinates) {
+      const { latitude, longitude } = await this.getCoordinates(
+        createEventDto.location,
+      );
+      coordinates = `${latitude},${longitude}`;
     }
 
     const data = {
       title: createEventDto.title,
       description: createEventDto.description,
       location: createEventDto.location,
+      coordinates,
       date: new Date(createEventDto.date),
       creatorId: token_data['userId'],
       companyId: createEventDto.companyId,
@@ -36,6 +61,8 @@ export class EventsService {
     const event = await this.prisma.event.create({
       data: data,
     });
+
+    console.log(coordinates);
 
     return {
       statusCode: 201,

@@ -19,6 +19,10 @@ export class CreateEventDto {
   location: string;
 
   @IsString()
+  @IsOptional()
+  coordinates?: string;
+
+  @IsString()
   date: string;
 
   @IsNumber()
