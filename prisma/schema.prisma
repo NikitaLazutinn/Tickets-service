@@ -58,6 +58,8 @@ model Event {
   title       String
   description String
   location    String
+  latitude    Float
+  longitude   Float
   date        DateTime
   creatorId   Int
   companyId   Int

@@ -4,6 +4,7 @@ import {
   IsDate,
   IsInt,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -17,6 +18,14 @@ export class CreateEventDto {
 
   @IsString()
   location: string;
+
+  @IsNumber()
+  @IsOptional()
+  latitude?: number;
+
+  @IsNumber()
+  @IsOptional()
+  longitude?: number;
 
   @IsString()
   date: string;
