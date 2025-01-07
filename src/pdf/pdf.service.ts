@@ -1,38 +1,60 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import * as PDFDocument from 'pdfkit';
-import * as fs from 'fs';
-import * as path from 'path';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import * as puppeteer from 'puppeteer';
 import * as QRCode from 'qrcode';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class PdfService {
   async generateTicketPdf(ticket: any) {
-    const doc = new PDFDocument();
     const tempDir = path.join(process.cwd(), 'temp');
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
+
     const filePath = path.join(tempDir, `ticket_${Date.now()}.pdf`);
 
-    const chunks: Buffer[] = [];
-    doc.on('data', (chunk) => chunks.push(chunk));
-    doc.on('end', () => {
-      const pdfBuffer = Buffer.concat(chunks);
-      fs.writeFileSync(filePath, pdfBuffer);
+    const qrCodeData = `${process.env.LOCALHOST_URL}/tickets/${ticket.id}/validate`;
+    let qrCodeDataUrl = '';
+    try {
+      qrCodeDataUrl = await QRCode.toDataURL(qrCodeData);
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to generate QR code:');
+    }
+
+    const templatePath = path.join(
+      process.cwd(),
+      'src',
+      'pdf',
+      'templates',
+      'ticket-template.html',
+    );
+
+    let ticketHtml = fs.readFileSync(templatePath, 'utf-8');
+
+    ticketHtml = ticketHtml
+      .replace('{{posterUrl}}', ticket.posterUrl || '')
+      .replace('{{eventTitle}}', ticket.eventTitle)
+      .replace('{{date}}', ticket.date)
+      .replace('{{location}}', ticket.location)
+      .replace('{{seat}}', ticket.seat)
+      .replace('{{price}}', ticket.price)
+      .replace('{{qrCodeDataUrl}}', qrCodeDataUrl);
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    await page.setContent(ticketHtml);
+
+    await page.pdf({
+      path: filePath,
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
     });
 
-    doc.fontSize(12).text(`Ticket for Event ID: ${ticket.eventId}`);
-    doc.text(`Seat: ${ticket.seatNumber}`);
-    doc.text(`Price: ${ticket.price}`);
-    doc.text(`Ticket ID: ${ticket.id}`);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`);
+    await browser.close();
 
-    const baseUrl = process.env.LOCALHOST_URL;
-    const qrCodeData = `${baseUrl}/tickets/${ticket.id}/validate`;
-    const qrCode = await QRCode.toDataURL(qrCodeData);
-    doc.image(qrCode, { width: 100, height: 100 });
-
-    doc.end();
     return filePath;
   }
 }
