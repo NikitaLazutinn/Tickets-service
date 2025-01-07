@@ -39,6 +39,7 @@
     "passport-google-oauth20": "^2.0.0",
     "pdfkit": "^0.15.2",
     "prisma": "^6.0.1",
+    "puppeteer": "^23.11.1",
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",

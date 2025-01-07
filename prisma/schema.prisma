@@ -28,6 +28,7 @@ model User {
   role              Role?       @relation("RoleUsers", fields: [roleId], references: [id])
   promoCodes        PromoCodesUsers[] 
   ratings           Rating[]
+  savedEvents       SavedEvent[]
 }
 
 model Role {
@@ -72,6 +73,7 @@ model Event {
   tickets             Ticket[]    @relation("EventTickets")
   averageRating Float?   @default(0.0)
   ratings       Rating[]
+  savedEvents       SavedEvent[]
 }
 
 model PromoCode {
@@ -119,6 +121,7 @@ model Ticket {
   user       User     @relation(fields: [userId], references: [id])
 }
 
+
 model Rating {
   id       Int   @id @default(autoincrement())
   userId   Int
@@ -128,3 +131,14 @@ model Rating {
   event    Event @relation(fields: [eventId], references: [id])
   @@unique([userId, eventId])
 }
+
+model SavedEvent {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  eventId     Int
+  savedAt     DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  event       Event    @relation(fields: [eventId], references: [id])
+  @@unique([userId, eventId]) 
+}
+
