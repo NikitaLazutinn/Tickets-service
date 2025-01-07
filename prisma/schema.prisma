@@ -27,6 +27,7 @@ model User {
   company           Company?    @relation("UserCompany", fields: [companyId], references: [id])
   role              Role?       @relation("RoleUsers", fields: [roleId], references: [id])
   promoCodes        PromoCodesUsers[] 
+  ratings           Rating[]
   savedEvents       SavedEvent[]
 }
 
@@ -70,6 +71,8 @@ model Event {
   creator             User        @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   promoCodes          PromoCode[] @relation("EventPromoCodes")
   tickets             Ticket[]    @relation("EventTickets")
+  averageRating Float?   @default(0.0)
+  ratings       Rating[]
   savedEvents       SavedEvent[]
 }
 
@@ -118,6 +121,17 @@ model Ticket {
   user       User     @relation(fields: [userId], references: [id])
 }
 
+
+model Rating {
+  id       Int   @id @default(autoincrement())
+  userId   Int
+  eventId  Int
+  rating   Int
+  user     User  @relation(fields: [userId], references: [id])
+  event    Event @relation(fields: [eventId], references: [id])
+  @@unique([userId, eventId])
+}
+
 model SavedEvent {
   id          Int      @id @default(autoincrement())
   userId      Int
@@ -127,3 +141,4 @@ model SavedEvent {
   event       Event    @relation(fields: [eventId], references: [id])
   @@unique([userId, eventId]) 
 }
+

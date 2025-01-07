@@ -12,6 +12,7 @@ import { EventsModule } from './events_/events.module';
 import { CompaniesModule } from './companies/companies.module';
 import { EmailModule } from './email/email.module';
 import { PdfModule } from './pdf/pdf.module';
+import { RatingModule } from './rating/rating.module';
 import { SavedEventsModule } from './saved-events/saved-events.module';
 
 @Module({
@@ -29,6 +30,7 @@ import { SavedEventsModule } from './saved-events/saved-events.module';
     PromoCodeModule,
     EmailModule,
     PdfModule,
+    RatingModule,
     SavedEventsModule,
   ],
   controllers: [],
