@@ -7,6 +7,7 @@ import {
   BadRequestException,
   Req,
   UseGuards,
+  Get,
 } from '@nestjs/common';
 import { StripeService } from './stripe.service';
 import Stripe from 'stripe';
@@ -32,23 +33,29 @@ export class StripeController {
   }
 
   @UseGuards(AuthUserGuard)
-  @Post('webhook')
-  async handleStripeWebhook(@Body() payload: any, @Req() req) {
+  @Get('payment-success')
+  async handlePaymentSuccess(
+    @Query('session_id') sessionId: string,
+    @Req() req,
+  ) {
     const token = req.user;
-    const sig = payload['stripe-signature'];
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-    const event: Stripe.Event =
-      this.stripeService.stripe.webhooks.constructEvent(
-        payload,
-        sig,
-        endpointSecret,
-      );
-
-    if (!event) {
-      throw new BadRequestException('Error verifying webhook signature');
-    }
-
-    return await this.stripeService.handleStripeWebhook(event, token);
+    await this.stripeService.handleSuccessfulPayment(sessionId, token);
+    return { message: 'Payment was successful' };
   }
+
+  // @UseGuards(AuthUserGuard)
+  // @Get('payment-cancelled')
+  // async handlePaymentCancelled(
+  //   @Query('session_id') sessionId: string,
+  //   @Req() req,
+  // ) {
+  //   const token = req.user;
+  //   if (!sessionId) {
+  //     throw new BadRequestException('Session ID is required');
+  //   }
+
+  //   await this.stripeService.handleCancelledPayment(sessionId, token);
+  //   return { message: 'Payment was cancelled' };
+  // }
 }

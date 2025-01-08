@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
 import Stripe from 'stripe';
 import { TicketService } from 'src/ticket/ticket.service';
@@ -43,8 +44,8 @@ export class StripeService {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.LOCALHOST_URL}/success?session_id={CHECKOUT_SESSION_ID}`, // Fixed string interpolation
-      cancel_url: `${process.env.LOCALHOST_URL}/cancel`,
+      success_url: `${process.env.LOCALHOST_URL}/stripe/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.LOCALHOST_URL}/stripe/payment-cancelled?session_id={CHECKOUT_SESSION_ID}`,
       metadata: {
         userId: userId.toString(),
         ticketId: ticketId.toString(),
@@ -54,37 +55,63 @@ export class StripeService {
     return session;
   }
 
-  async handleStripeWebhook(event: Stripe.Event, token: string) {
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const ticketId = parseInt(session.metadata.ticketId);
-        const userId = parseInt(session.metadata.userId);
+  async handleSuccessfulPayment(sessionId: string, token: string) {
+    if (!sessionId) {
+      throw new BadRequestException('Session ID is required');
+    }
 
-        if (session.payment_status !== 'paid') {
-          throw new InternalServerErrorException('Payment was not successful');
-        }
+    const session = await this.stripe.checkout.sessions.retrieve(sessionId);
 
-        try {
-          await this.ticketService.generateTicketPdfAndUploadToDropbox(
-            userId.toString(),
-            ticketId,
-          );
-        } catch (error) {
-          throw new InternalServerErrorException(
-            'Error during post-payment processing',
-          );
-        }
-        break;
-      }
-      case 'checkout.session.async_payment_failed': {
-        const failedSession = event.data.object as Stripe.Checkout.Session;
-        const failedTicketId = parseInt(failedSession.metadata.ticketId);
-        await this.ticketService.remove(failedTicketId, token);
-        break;
-      }
-      default:
-        console.log(`Unknown event: ${event.type}`);
+    if (!session) {
+      throw new BadRequestException('Invalid session');
+    }
+
+    if (session.payment_status !== 'paid') {
+      throw new BadRequestException('Payment was not successful');
+    }
+
+    const ticketId = parseInt(session.metadata.ticketId);
+
+    try {
+      await this.ticketService.generateTicketPdfAndUploadToDropbox(
+        token,
+        ticketId,
+      );
+    } catch (error) {
+      console.error('Error during post-payment processing:', error);
+      throw new InternalServerErrorException(
+        'Error during post-payment processing',
+      );
     }
   }
+
+  // async handleCancelledPayment(sessionId: string, token: string) {
+  //   if (!sessionId) {
+  //     throw new BadRequestException('Session ID is required');
+  //   }
+
+  //   const session = await this.stripe.checkout.sessions.retrieve(sessionId);
+
+  //   if (!session) {
+  //     throw new BadRequestException('Invalid session');
+  //   }
+
+  //   if (
+  //     session.payment_status === 'unpaid' ||
+  //     session.payment_status === 'no_payment_required'
+  //   ) {
+  //     const ticketId = parseInt(session.metadata.ticketId);
+  //     try {
+  //       await this.ticketService.remove(ticketId, token);
+  //     } catch (error) {
+  //       throw new InternalServerErrorException(
+  //         'Error during ticket cancellation',
+  //       );
+  //     }
+
+  //     return { message: 'Payment was cancelled and ticket has been removed' };
+  //   }
+
+  //   throw new BadRequestException('Payment was not cancelled');
+  // }
 }
