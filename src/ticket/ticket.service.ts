@@ -41,9 +41,21 @@ export class TicketService {
       throw new NotFoundException(`User with ID ${userId} does not exist.`);
     }
 
-    return this.prisma.ticket.create({
+    const ticket = await this.prisma.ticket.create({
       data: { eventId, userId, seatNumber, price },
     });
+
+    const eventCreator = await this.userService.find(eventExists.creatorId);
+    if (eventCreator.notifyOnNewVisitors) {
+      await this.emailService.sendEmail(
+        eventCreator.email,
+        'New Visitor Notification',
+        `A new visitor has purchased a ticket for your event "${eventExists.title}".`,
+        [],
+      );
+    }
+
+    return ticket;
   }
 
   async findAll(

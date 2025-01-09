@@ -29,6 +29,7 @@ model User {
   promoCodes        PromoCodesUsers[] 
   ratings           Rating[]
   savedEvents       SavedEvent[]
+  notifyOnNewVisitors Boolean   @default(false)
 }
 
 model Role {

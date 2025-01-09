@@ -249,6 +249,10 @@ export class UsersService {
     });
 
     if (roleId === 2) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { notifyOnNewVisitors: true },
+      });
       await this.sendEventCreatorNotification(user.email);
     }
 
@@ -270,7 +274,7 @@ export class UsersService {
       subject: 'Congratulations! You are now an Event Creator',
       text: `Hello,
 
-You have been granted the Event Creator role on our platform. You can now create and manage events!
+You have been granted the Event Creator role on our platform. You can now create and manage events, and you will be notified when a new visitor attends your event.
 
 Best regards,
 The Team Tickets Servise`,
