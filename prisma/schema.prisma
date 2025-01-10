@@ -30,6 +30,7 @@ model User {
   ratings           Rating[]
   savedEvents       SavedEvent[]
   notifyOnNewVisitors Boolean   @default(false)
+  notifications      Notification[]     @relation("UserNotifications")
 }
 
 model Role {
@@ -74,9 +75,10 @@ model Event {
   creator             User        @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   promoCodes          PromoCode[] @relation("EventPromoCodes")
   tickets             Ticket[]    @relation("EventTickets")
-  averageRating Float?   @default(0.0)
-  ratings       Rating[]
-  savedEvents       SavedEvent[]
+  averageRating       Float?   @default(0.0)
+  ratings             Rating[]
+  savedEvents         SavedEvent[]
+  notifications       Notification[]     @relation("EventNotifications")
 }
 
 model PromoCode {
@@ -143,5 +145,16 @@ model SavedEvent {
   user        User     @relation(fields: [userId], references: [id])
   event       Event    @relation(fields: [eventId], references: [id])
   @@unique([userId, eventId]) 
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  eventId     Int
+  userId      Int
+  message     String
+  type        String  
+  createdAt   DateTime  @default(now())
+  event       Event     @relation("EventNotifications", fields: [eventId], references: [id])
+  user        User      @relation("UserNotifications", fields: [userId], references: [id])
 }
 

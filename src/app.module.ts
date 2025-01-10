@@ -14,6 +14,7 @@ import { EmailModule } from './email/email.module';
 import { PdfModule } from './pdf/pdf.module';
 import { RatingModule } from './rating/rating.module';
 import { SavedEventsModule } from './saved-events/saved-events.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { SavedEventsModule } from './saved-events/saved-events.module';
     PdfModule,
     RatingModule,
     SavedEventsModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [],

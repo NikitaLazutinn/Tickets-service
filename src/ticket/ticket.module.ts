@@ -7,10 +7,18 @@ import { UsersModule } from 'src/users/users.module';
 import { DropboxService } from './dropbox/dropbox.service';
 import { EmailModule } from 'src/email/email.module';
 import { PdfModule } from 'src/pdf/pdf.module';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   controllers: [TicketController],
   providers: [TicketService, DropboxService],
-  imports: [PrismaModule, EventsModule, UsersModule, EmailModule, PdfModule],
+  imports: [
+    PrismaModule,
+    EventsModule,
+    UsersModule,
+    EmailModule,
+    PdfModule,
+    NotificationsModule,
+  ],
 })
 export class TicketModule {}
