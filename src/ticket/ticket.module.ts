@@ -20,5 +20,7 @@ import { NotificationsModule } from 'src/notifications/notifications.module';
     PdfModule,
     NotificationsModule,
   ],
+
+  exports: [TicketService],
 })
 export class TicketModule {}
