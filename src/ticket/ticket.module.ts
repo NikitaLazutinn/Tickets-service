@@ -12,5 +12,6 @@ import { PdfModule } from 'src/pdf/pdf.module';
   controllers: [TicketController],
   providers: [TicketService, DropboxService],
   imports: [PrismaModule, EventsModule, UsersModule, EmailModule, PdfModule],
+  exports: [TicketService],
 })
 export class TicketModule {}
