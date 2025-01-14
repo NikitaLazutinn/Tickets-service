@@ -15,6 +15,7 @@ import { DropboxService } from './dropbox/dropbox.service';
 import { PdfService } from 'src/pdf/pdf.service';
 import { EmailService } from 'src/email/email.service';
 import { NotificationsService } from 'src/notifications/notifications.service';
+import { ChatService } from 'src/chat/chat.service';
 
 @Injectable()
 export class TicketService {
@@ -26,6 +27,7 @@ export class TicketService {
     private readonly pdfService: PdfService,
     private readonly emailService: EmailService,
     private readonly notificationsService: NotificationsService,
+    private readonly chatService: ChatService,
   ) {}
 
   async create(createTicketDto: CreateTicketDto, token: string) {
@@ -36,6 +38,8 @@ export class TicketService {
     const ticket = await this.prisma.ticket.create({
       data: { eventId, userId, seatNumber, price },
     });
+
+    await this.chatService.createChatRoom(eventId, userId, event.creatorId);
 
     await this.notifyEventCreator(
       event,
