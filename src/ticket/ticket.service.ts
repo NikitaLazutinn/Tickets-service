@@ -10,11 +10,11 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { EventsService } from 'src/events_/events.service';
 import { UsersService } from 'src/users/users.service';
-import { Dropbox } from 'dropbox';
 import * as fs from 'fs';
 import { DropboxService } from './dropbox/dropbox.service';
 import { PdfService } from 'src/pdf/pdf.service';
 import { EmailService } from 'src/email/email.service';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class TicketService {
@@ -25,25 +25,26 @@ export class TicketService {
     private readonly dropboxService: DropboxService,
     private readonly pdfService: PdfService,
     private readonly emailService: EmailService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(createTicketDto: CreateTicketDto, token: string) {
     const { eventId, userId, seatNumber, price } = createTicketDto;
 
-    const eventExists = await this.eventsService.findOne(eventId);
-    const userExists = await this.userService.find(userId);
+    const { event, user } = await this.validateEventAndUser(eventId, userId);
 
-    if (!eventExists) {
-      throw new NotFoundException(`Event with ID ${eventId} does not exist.`);
-    }
-
-    if (!userExists) {
-      throw new NotFoundException(`User with ID ${userId} does not exist.`);
-    }
-
-    return this.prisma.ticket.create({
+    const ticket = await this.prisma.ticket.create({
       data: { eventId, userId, seatNumber, price },
     });
+
+    await this.notifyEventCreator(
+      event,
+      user,
+      `User ${user.name} purchased a ticket for your event "${event.title}".`,
+      'TICKET_PURCHASED',
+    );
+
+    return ticket;
   }
 
   async findAll(
@@ -55,13 +56,13 @@ export class TicketService {
     const whereClause: any = {};
 
     if (token['roleId'] === 3) {
-      if (userId && parseInt(userId) !== token['id']) {
+      if (userId && parseInt(userId) !== token['userId']) {
         throw new ForbiddenException('Access denied to other user tickets');
       }
-      whereClause.userId = token['id'];
+      whereClause.userId = token['userId'];
     } else if (token['roleId'] === 2) {
       const eventsCreatedByUser = await this.prisma.event.findMany({
-        where: { creatorId: token['id'] },
+        where: { creatorId: token['userId'] },
         select: { id: true },
       });
 
@@ -108,13 +109,16 @@ export class TicketService {
       throw new NotFoundException('Ticket not found');
     }
 
-    if (token['roleId'] === 3 && ticket.userId !== token['id']) {
+    if (token['roleId'] === 3 && ticket.userId !== token['userId']) {
       throw new ForbiddenException('Access denied to this ticket');
     }
 
     if (
       token['roleId'] === 2 &&
-      !(await this.eventsService.isEventCreator(token['id'], ticket.eventId))
+      !(await this.eventsService.isEventCreator(
+        token['userId'],
+        ticket.eventId,
+      ))
     ) {
       throw new ForbiddenException('Access denied to this ticket');
     }
@@ -122,21 +126,32 @@ export class TicketService {
     return ticket;
   }
 
-  async update(id: number, updateTicketDto: UpdateTicketDto, token: string) {
-    await this.findOne(id, token);
+  // async update(id: number, updateTicketDto: UpdateTicketDto, token: string) {
+  //   await this.findOne(id, token);
 
-    await this.prisma.ticket.update({
-      where: { id },
-      data: updateTicketDto,
-    });
+  //   await this.prisma.ticket.update({
+  //     where: { id },
+  //     data: updateTicketDto,
+  //   });
 
-    return { message: 'Ticket updated successfully' };
-  }
+  //   return { message: 'Ticket updated successfully' };
+  // }
 
   async remove(id: number, token: string) {
-    await this.findOne(id, token);
+    const ticket = await this.findOne(id, token);
+    const { event, user } = await this.validateEventAndUser(
+      ticket.eventId,
+      ticket.userId,
+    );
 
     await this.prisma.ticket.delete({ where: { id } });
+
+    await this.notifyEventCreator(
+      event,
+      user,
+      `User ${user.name} has removed their ticket for your event "${event.title}".`,
+      'TICKET_REMOVED',
+    );
 
     return { message: 'Ticket deleted successfully' };
   }
@@ -199,5 +214,43 @@ export class TicketService {
     });
 
     return { message: 'Ticket validate successfully' };
+  }
+
+  private async validateEventAndUser(eventId: number, userId: number) {
+    const event = await this.eventsService.findOne(eventId);
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${eventId} does not exist.`);
+    }
+
+    const user = await this.userService.find(userId);
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} does not exist.`);
+    }
+
+    return { event, user };
+  }
+
+  private async notifyEventCreator(
+    event: any,
+    user: any,
+    message: string,
+    notificationType: string,
+  ) {
+    const eventCreator = await this.userService.find(event.creatorId);
+    if (eventCreator.notifyOnNewVisitors) {
+      await this.emailService.sendEmail(
+        eventCreator.email,
+        'Notification',
+        message,
+        [],
+      );
+
+      await this.notificationsService.createNotification(
+        event.id,
+        user.id,
+        message,
+        notificationType,
+      );
+    }
   }
 }
