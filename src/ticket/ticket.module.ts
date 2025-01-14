@@ -8,6 +8,7 @@ import { DropboxService } from './dropbox/dropbox.service';
 import { EmailModule } from 'src/email/email.module';
 import { PdfModule } from 'src/pdf/pdf.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
+import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
   controllers: [TicketController],
@@ -19,6 +20,7 @@ import { NotificationsModule } from 'src/notifications/notifications.module';
     EmailModule,
     PdfModule,
     NotificationsModule,
+    ChatModule,
   ],
 
   exports: [TicketService],

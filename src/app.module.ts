@@ -15,6 +15,7 @@ import { PdfModule } from './pdf/pdf.module';
 import { RatingModule } from './rating/rating.module';
 import { SavedEventsModule } from './saved-events/saved-events.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     RatingModule,
     SavedEventsModule,
     NotificationsModule,
+    ChatModule,
   ],
   controllers: [],
   providers: [],
